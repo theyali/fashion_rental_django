@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}404 · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="error-page__inner">
+    <div class="eyebrow">PAGE NOT FOUND</div>
+    <h1>404</h1>
+    <p>{% if site_lang == 'en' %}This page is no longer here or the address is incorrect.{% elif site_lang == 'ru' %}Такой страницы больше нет или адрес указан неверно.{% else %}Bu səhifə mövcud deyil və ya ünvan səhv göstərilib.{% endif %}</p>
+    <a class="text-link" href="{% url 'catalog' %}">{{ ui.catalog }} →</a>
+  </div>
+</section>
+{% endblock %}

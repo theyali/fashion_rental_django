@@ -8,9 +8,7 @@
   function swapLocalContent(lang) {
     $('[data-i18n]').each(function () {
       const key = $(this).data('i18n');
-      if (translations[lang] && translations[lang][key]) {
-        $(this).text(translations[lang][key]);
-      }
+      if (translations[lang] && translations[lang][key]) $(this).text(translations[lang][key]);
     });
     $('[data-name-az], [data-name-ru], [data-name-en]').each(function () {
       const value = $(this).data('name-' + lang);
@@ -37,7 +35,30 @@
     });
   });
 
-  $('.nav-toggle').on('click', function () {
-    $('.main-nav').toggleClass('open');
+  const navToggle = $('.nav-toggle');
+  const mainNav = $('.main-nav');
+
+  navToggle.on('click', function () {
+    const isOpen = mainNav.toggleClass('open').hasClass('open');
+    navToggle.attr('aria-expanded', isOpen ? 'true' : 'false');
   });
+
+  mainNav.on('click', 'a', function () {
+    mainNav.removeClass('open');
+    navToggle.attr('aria-expanded', 'false');
+  });
+
+  $('.flash-stack').on('click', '.flash-close', function () {
+    $(this).closest('.flash-message').fadeOut(180, function () { $(this).remove(); });
+  });
+
+  window.setTimeout(function () {
+    $('.flash-message').fadeOut(250, function () { $(this).remove(); });
+  }, 7000);
+
+  function updateHeader() {
+    $('#siteHeader').toggleClass('is-scrolled', window.scrollY > 10);
+  }
+  updateHeader();
+  $(window).on('scroll', updateHeader);
 })(jQuery);

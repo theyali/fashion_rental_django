@@ -1,10 +1,10 @@
 <article class="product-card">
   <a class="product-card__image" href="{{ product.get_absolute_url }}">
     {% if product.cover_image %}
-      <img class="product-card__primary" src="{{ product.cover_image.url }}" alt="{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}">
+      <img class="product-card__primary" src="{{ product.cover_image.url }}" loading="lazy" decoding="async" alt="{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}">
     {% endif %}
     {% with gallery=product.images.all %}
-      {% if gallery.1 %}<img class="product-card__secondary" src="{{ gallery.1.image.url }}" alt="">{% endif %}
+      {% if gallery.1 %}<img class="product-card__secondary" src="{{ gallery.1.image.url }}" loading="lazy" decoding="async" alt="">{% endif %}
     {% endwith %}
     <span class="product-card__badge">
       {% if product.product_type == 'rental' %}{{ ui.rental }}{% elif product.product_type == 'ready' %}{{ ui.ready }}{% else %}{{ ui.custom }}{% endif %}

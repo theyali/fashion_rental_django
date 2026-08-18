@@ -3,9 +3,25 @@
 <html lang="{{ site_lang }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Atelier Rental{% endblock %}</title>
-  <meta name="description" content="Fashion rental and made-to-order catalog">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f6f2">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <title>{% block title %}{{ seo_title }}{% endblock %}</title>
+  <meta name="description" content="{{ seo_description }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site_name }}">
+  <meta property="og:locale" content="{{ og_locale }}">
+  <meta property="og:title" content="{{ seo_title }}">
+  <meta property="og:description" content="{{ seo_description }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  {% if seo_image %}<meta property="og:image" content="{{ seo_image }}">{% endif %}
+  <meta name="twitter:card" content="{% if seo_image %}summary_large_image{% else %}summary{% endif %}">
+  <meta name="twitter:title" content="{{ seo_title }}">
+  <meta name="twitter:description" content="{{ seo_description }}">
+  {% if seo_image %}<meta name="twitter:image" content="{{ seo_image }}">{% endif %}
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -13,41 +29,67 @@
   <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
   <link rel="stylesheet" href="{% static 'css/booking.css' %}">
   <link rel="stylesheet" href="{% static 'css/product.css' %}">
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/final.css' %}">
+
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"{{ site_name|escapejs }}","url":"{{ site_url|escapejs }}","email":"{{ contact_email|escapejs }}","telephone":"{{ contact_phone|escapejs }}"}
+  </script>
+  {% if product_schema_json %}<script type="application/ld+json">{{ product_schema_json|safe }}</script>{% endif %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="{% url 'home' %}">ATELIER <span>RENTAL</span></a>
-    <button class="nav-toggle" aria-label="Menu">☰</button>
-    <nav class="main-nav">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header" id="siteHeader">
+    <a class="brand" href="{% url 'home' %}" aria-label="{{ site_name }}">ATELIER <span>RENTAL</span></a>
+    <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mainNav">☰</button>
+    <nav class="main-nav" id="mainNav" aria-label="Primary navigation">
       <a href="{% url 'home' %}" data-i18n="home">{{ ui.home }}</a>
       <a href="{% url 'catalog' %}" data-i18n="catalog">{{ ui.catalog }}</a>
       <a href="{% url 'about' %}" data-i18n="about">{{ ui.about }}</a>
       <a href="{% url 'contacts' %}" data-i18n="contacts">{{ ui.contacts }}</a>
     </nav>
     <div class="lang-switch" aria-label="Language">
-      <button class="lang-btn {% if site_lang == 'az' %}active{% endif %}" data-lang="az">AZ</button>
+      <button type="button" class="lang-btn {% if site_lang == 'az' %}active{% endif %}" data-lang="az">AZ</button>
       <span>/</span>
-      <button class="lang-btn {% if site_lang == 'en' %}active{% endif %}" data-lang="en">EN</button>
+      <button type="button" class="lang-btn {% if site_lang == 'en' %}active{% endif %}" data-lang="en">EN</button>
       <span>/</span>
-      <button class="lang-btn {% if site_lang == 'ru' %}active{% endif %}" data-lang="ru">RU</button>
+      <button type="button" class="lang-btn {% if site_lang == 'ru' %}active{% endif %}" data-lang="ru">RU</button>
     </div>
   </header>
 
-  <main>{% block content %}{% endblock %}</main>
+  {% if messages %}
+    <div class="flash-stack" aria-live="polite">
+      {% for message in messages %}
+        <div class="flash-message flash-message--{{ message.tags|default:'info' }}">
+          <span>{{ message }}</span>
+          <button type="button" class="flash-close" aria-label="Close">×</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
-  <footer class="footer">
-    <div>
+  <main id="main-content">{% block content %}{% endblock %}</main>
+
+  <footer class="footer luxury-footer">
+    <div class="footer-branding">
       <div class="brand footer-brand">ATELIER <span>RENTAL</span></div>
       <p>{% if site_lang == 'en' %}Rental · Ready-made · Made-to-order{% elif site_lang == 'ru' %}Аренда · Готовое · На заказ{% else %}Kirayə · Hazır geyim · Sifarişlə{% endif %}</p>
     </div>
+    <div class="footer-contact">
+      <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+      <a href="tel:{{ contact_phone|cut:' ' }}">{{ contact_phone }}</a>
+      <span>{{ contact_location }}</span>
+    </div>
     <div class="footer-links">
+      <a href="{% url 'catalog' %}">{{ ui.catalog }}</a>
       <a href="{% url 'about' %}">{{ ui.about }}</a>
       <a href="{% url 'contacts' %}">{{ ui.contacts }}</a>
-      <a href="/admin/">Admin</a>
+      <span>© {% now "Y" %}</span>
     </div>
   </footer>
 
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>window.CSRF_TOKEN = '{{ csrf_token }}';</script>
   <script src="{% static 'js/site.js' %}"></script>
   {% block extra_js %}{% endblock %}

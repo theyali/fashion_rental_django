@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.env.prod
+.venv
+__pycache__
+*.pyc
+.DS_Store
+data/postgres
+staticfiles
+media/*
+!media/.gitkeep

@@ -1,24 +1,55 @@
 {% extends 'base.html' %}
-{% block title %}{{ ui.contacts }} · Atelier Rental{% endblock %}
+{% block title %}{{ seo_title }}{% endblock %}
 {% block content %}
-<section class="contact-page section-wide">
-  <div>
+<section class="contact-page section-wide final-contact-page">
+  <div class="contact-intro">
     <div class="eyebrow">PRIVATE APPOINTMENT</div>
     <h1>{{ ui.contacts }}</h1>
     <p>
-      {% if site_lang == 'en' %}Questions about rental dates, fitting or a custom order? Leave a request.
-      {% elif site_lang == 'ru' %}Вопросы по датам аренды, примерке или индивидуальному заказу? Оставьте заявку.
-      {% else %}Kirayə tarixləri, ölçü yoxlaması və ya fərdi sifarişlə bağlı sualınız var? Müraciət göndərin.{% endif %}
+      {% if site_lang == 'en' %}Questions about rental dates, fitting or a custom order? Leave a request and we will get back to you.
+      {% elif site_lang == 'ru' %}Вопросы по датам аренды, примерке или индивидуальному заказу? Оставьте заявку — мы свяжемся с вами.
+      {% else %}Kirayə tarixləri, fitting və ya fərdi sifarişlə bağlı sualınız var? Müraciət göndərin, sizinlə əlaqə saxlayaq.{% endif %}
     </p>
-    <div class="contact-meta"><span>atelier@example.com</span><span>+994 00 000 00 00</span><span>Baku · by appointment</span></div>
+    <div class="contact-meta">
+      <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+      <a href="tel:{{ contact_phone|cut:' ' }}">{{ contact_phone }}</a>
+      <span>{{ contact_location }}</span>
+    </div>
   </div>
-  <form method="post" class="contact-form">
+
+  <form method="post" class="contact-form luxury-form" novalidate>
     {% csrf_token %}
-    <input name="name" required placeholder="{{ ui.name }}">
-    <input name="email" type="email" required placeholder="{{ ui.email }}">
-    <input name="phone" placeholder="{{ ui.phone }}">
-    <textarea name="message" rows="7" required placeholder="{{ ui.message }}"></textarea>
-    <button class="btn-dark" type="submit">{{ ui.send }}</button>
+    <div class="form-honeypot" aria-hidden="true">
+      <label>Website<input name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
+
+    <label class="luxury-field">
+      <span>{{ ui.name }}</span>
+      <input name="name" required autocomplete="name" value="{{ form.name.value|default_if_none:'' }}">
+      {% if form.name.errors %}<small class="field-error">{{ form.name.errors|striptags }}</small>{% endif %}
+    </label>
+
+    <label class="luxury-field">
+      <span>{{ ui.email }}</span>
+      <input name="email" type="email" required autocomplete="email" value="{{ form.email.value|default_if_none:'' }}">
+      {% if form.email.errors %}<small class="field-error">{{ form.email.errors|striptags }}</small>{% endif %}
+    </label>
+
+    <label class="luxury-field">
+      <span>{{ ui.phone }}</span>
+      <input name="phone" autocomplete="tel" value="{{ form.phone.value|default_if_none:'' }}">
+      {% if form.phone.errors %}<small class="field-error">{{ form.phone.errors|striptags }}</small>{% endif %}
+    </label>
+
+    <label class="luxury-field luxury-field--message">
+      <span>{{ ui.message }}</span>
+      <textarea name="message" rows="7" required>{{ form.message.value|default_if_none:'' }}</textarea>
+      {% if form.message.errors %}<small class="field-error">{{ form.message.errors|striptags }}</small>{% endif %}
+    </label>
+
+    <button class="btn-dark luxury-submit" type="submit">{{ ui.send }} <span>→</span></button>
   </form>
 </section>
 {% endblock %}
