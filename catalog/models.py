@@ -55,8 +55,31 @@ class Product(models.Model):
     description_az = models.TextField(blank=True)
     description_ru = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
+
+    material_az = models.CharField(max_length=180, blank=True)
+    material_ru = models.CharField(max_length=180, blank=True)
+    material_en = models.CharField(max_length=180, blank=True)
+    composition_az = models.CharField(max_length=220, blank=True)
+    composition_ru = models.CharField(max_length=220, blank=True)
+    composition_en = models.CharField(max_length=220, blank=True)
+    fit_az = models.CharField(max_length=180, blank=True)
+    fit_ru = models.CharField(max_length=180, blank=True)
+    fit_en = models.CharField(max_length=180, blank=True)
+    length_az = models.CharField(max_length=180, blank=True)
+    length_ru = models.CharField(max_length=180, blank=True)
+    length_en = models.CharField(max_length=180, blank=True)
+    care_az = models.CharField(max_length=220, blank=True)
+    care_ru = models.CharField(max_length=220, blank=True)
+    care_en = models.CharField(max_length=220, blank=True)
+
     product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=RENTAL)
-    rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    rental_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Цена аренды за 1 календарный день.",
+    )
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     custom_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     sizes = models.CharField(max_length=120, default="XS, S, M, L")
@@ -124,6 +147,9 @@ class Reservation(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     status = models.CharField(max_length=12, choices=STATUSES, default=PENDING)
+    daily_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, editable=False)
+    rental_days = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, editable=False)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -135,6 +161,18 @@ class Reservation(models.Model):
     @property
     def short_code(self):
         return str(self.booking_id).split("-")[0].upper()
+
+    def calculate_pricing(self):
+        if (
+            self.product_id
+            and self.start_date
+            and self.end_date
+            and self.end_date >= self.start_date
+            and self.product.rental_price is not None
+        ):
+            self.rental_days = (self.end_date - self.start_date).days + 1
+            self.daily_price = self.product.rental_price
+            self.total_price = self.daily_price * self.rental_days
 
     def clean(self):
         errors = {}
@@ -148,6 +186,8 @@ class Reservation(models.Model):
         if self.product_id:
             if self.product.product_type != Product.RENTAL:
                 errors["product"] = "Yalnız kirayə məhsullarını bron etmək olar."
+            elif self.product.rental_price is None:
+                errors["product"] = "Kirayə məhsulu üçün günlük qiymət təyin edilməyib."
 
             available_sizes = [item.strip() for item in self.product.sizes.split(",") if item.strip()]
             if available_sizes:

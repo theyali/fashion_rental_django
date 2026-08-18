@@ -77,44 +77,24 @@ def _product_sizes(product):
 
 
 def _localized_product_name(product, lang):
-    return {
-        "az": product.name_az or product.name_ru,
-        "ru": product.name_ru,
-        "en": product.name_en,
-    }[lang]
+    return {"az": product.name_az or product.name_ru, "ru": product.name_ru, "en": product.name_en}[lang]
 
 
 def _localized_product_description(product, lang):
-    return {
-        "az": product.description_az or product.description_ru,
-        "ru": product.description_ru,
-        "en": product.description_en,
-    }[lang]
+    return {"az": product.description_az or product.description_ru, "ru": product.description_ru, "en": product.description_en}[lang]
 
 
 def _send_mail(subject, body, recipients):
     recipients = [email for email in recipients if email]
     if not recipients:
         return
-    send_mail(
-        subject,
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        recipients,
-        fail_silently=True,
-    )
+    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=True)
 
 
 def _notify_contact(contact, lang):
     _send_mail(
         f"New atelier enquiry — {contact.name}",
-        "\n".join([
-            f"Name: {contact.name}",
-            f"Email: {contact.email}",
-            f"Phone: {contact.phone or '-'}",
-            "",
-            contact.message,
-        ]),
+        "\n".join([f"Name: {contact.name}", f"Email: {contact.email}", f"Phone: {contact.phone or '-'}", "", contact.message]),
         [settings.NOTIFY_EMAIL],
     )
     confirmation = {
@@ -129,11 +109,7 @@ def _notify_reservation(reservation, lang):
     product_name = _localized_product_name(reservation.product, lang)
     color_name = "-"
     if reservation.color:
-        color_name = {
-            "az": reservation.color.name_az or reservation.color.name_ru,
-            "ru": reservation.color.name_ru,
-            "en": reservation.color.name_en,
-        }[lang]
+        color_name = {"az": reservation.color.name_az or reservation.color.name_ru, "ru": reservation.color.name_ru, "en": reservation.color.name_en}[lang]
 
     admin_body = "\n".join([
         f"Booking code: {reservation.short_code}",
@@ -141,6 +117,9 @@ def _notify_reservation(reservation, lang):
         f"Color: {reservation.color or '-'}",
         f"Size: {reservation.size or '-'}",
         f"Dates: {reservation.start_date} — {reservation.end_date}",
+        f"Rental days: {reservation.rental_days or '-'}",
+        f"Daily price: {reservation.daily_price or '-'} AZN",
+        f"Total price: {reservation.total_price or '-'} AZN",
         f"Customer: {reservation.customer_name}",
         f"Email: {reservation.email}",
         f"Phone: {reservation.phone}",
@@ -148,10 +127,15 @@ def _notify_reservation(reservation, lang):
     ])
     _send_mail(f"New booking {reservation.short_code}", admin_body, [settings.NOTIFY_EMAIL])
 
+    price_line = {
+        "az": f"Qiymət: {reservation.daily_price} ₼ × {reservation.rental_days} gün = {reservation.total_price} ₼",
+        "ru": f"Стоимость: {reservation.daily_price} ₼ × {reservation.rental_days} дн. = {reservation.total_price} ₼",
+        "en": f"Price: {reservation.daily_price} ₼ × {reservation.rental_days} days = {reservation.total_price} ₼",
+    }[lang]
     customer_body = {
-        "az": f"{product_name} üçün bron sorğunuz qəbul edildi.\nKod: {reservation.short_code}\nRəng: {color_name}\nÖlçü: {reservation.size}\nTarixlər: {reservation.start_date} — {reservation.end_date}\nTəsdiq üçün sizinlə əlaqə saxlayacağıq.",
-        "ru": f"Ваша заявка на бронирование «{product_name}» принята.\nКод: {reservation.short_code}\nЦвет: {color_name}\nРазмер: {reservation.size}\nДаты: {reservation.start_date} — {reservation.end_date}\nМы свяжемся с вами для подтверждения.",
-        "en": f"Your booking request for {product_name} has been received.\nCode: {reservation.short_code}\nColor: {color_name}\nSize: {reservation.size}\nDates: {reservation.start_date} — {reservation.end_date}\nWe will contact you to confirm it.",
+        "az": f"{product_name} üçün bron sorğunuz qəbul edildi.\nKod: {reservation.short_code}\nRəng: {color_name}\nÖlçü: {reservation.size}\nTarixlər: {reservation.start_date} — {reservation.end_date}\n{price_line}\nTəsdiq üçün sizinlə əlaqə saxlayacağıq.",
+        "ru": f"Ваша заявка на бронирование «{product_name}» принята.\nКод: {reservation.short_code}\nЦвет: {color_name}\nРазмер: {reservation.size}\nДаты: {reservation.start_date} — {reservation.end_date}\n{price_line}\nМы свяжемся с вами для подтверждения.",
+        "en": f"Your booking request for {product_name} has been received.\nCode: {reservation.short_code}\nColor: {color_name}\nSize: {reservation.size}\nDates: {reservation.start_date} — {reservation.end_date}\n{price_line}\nWe will contact you to confirm it.",
     }[lang]
     _send_mail(f"Atelier Rental — {reservation.short_code}", customer_body, [reservation.email])
 
@@ -161,26 +145,14 @@ def home(request):
     rental = Product.objects.filter(is_active=True, product_type=Product.RENTAL).prefetch_related("images", "colors")[:4]
     ready = Product.objects.filter(is_active=True, product_type=Product.READY).prefetch_related("images", "colors")[:4]
     custom = Product.objects.filter(is_active=True, product_type=Product.CUSTOM).prefetch_related("images", "colors")[:4]
-    context = {
-        "featured": featured,
-        "rental": rental,
-        "ready": ready,
-        "custom": custom,
-        **_seo_context(request, "home"),
-    }
+    context = {"featured": featured, "rental": rental, "ready": ready, "custom": custom, **_seo_context(request, "home")}
     if featured and featured[0].cover_image:
         context["seo_image"] = request.build_absolute_uri(featured[0].cover_image.url)
     return render(request, "catalog/home.html", context)
 
 
 def catalog(request):
-    products = (
-        Product.objects.filter(is_active=True)
-        .select_related("category")
-        .prefetch_related("colors", "images")
-        .annotate(catalog_price=_catalog_price_expression())
-    )
-
+    products = Product.objects.filter(is_active=True).select_related("category").prefetch_related("colors", "images").annotate(catalog_price=_catalog_price_expression())
     product_type = request.GET.get("type", "").strip()
     category = request.GET.get("category", "").strip()
     color = request.GET.get("color", "").strip()
@@ -192,7 +164,6 @@ def catalog(request):
         products = products.filter(product_type=product_type)
     else:
         product_type = ""
-
     if category:
         products = products.filter(category__slug=category)
     if color.isdigit():
@@ -203,7 +174,6 @@ def catalog(request):
         products = products.filter(sizes__iregex=rf"(^|,\s*){re.escape(size)}(\s*,|$)")
     else:
         size = ""
-
     if price_max:
         try:
             max_price = Decimal(price_max)
@@ -244,12 +214,7 @@ def catalog(request):
 
 
 def product_detail(request, slug):
-    product = get_object_or_404(
-        Product.objects.select_related("category").prefetch_related("colors", "images__color"),
-        slug=slug,
-        is_active=True,
-    )
-
+    product = get_object_or_404(Product.objects.select_related("category").prefetch_related("colors", "images__color"), slug=slug, is_active=True)
     media_by_color = {}
     for image in product.images.all():
         key = str(image.color_id or "default")
@@ -259,7 +224,6 @@ def product_detail(request, slug):
             bucket["frames"].append(item)
         else:
             bucket["photos"].append(item)
-
     for bucket in media_by_color.values():
         bucket["photos"].sort(key=lambda item: (item["sort"], item["id"]))
         bucket["frames"].sort(key=lambda item: (item["angle"], item["sort"], item["id"]))
@@ -276,14 +240,10 @@ def product_detail(request, slug):
         "description": product_description,
         "url": f"{settings.SITE_URL}{product.get_absolute_url()}",
         "image": [seo_image] if seo_image else [],
-        "offers": {
-            "@type": "Offer",
-            "priceCurrency": "AZN",
-            "price": str(price or "0"),
-            "availability": "https://schema.org/InStock",
-            "url": f"{settings.SITE_URL}{product.get_absolute_url()}",
-        },
+        "offers": {"@type": "Offer", "priceCurrency": "AZN", "price": str(price or "0"), "availability": "https://schema.org/InStock", "url": f"{settings.SITE_URL}{product.get_absolute_url()}"},
     }
+    if product.product_type == Product.RENTAL:
+        schema["offers"]["priceSpecification"] = {"@type": "UnitPriceSpecification", "priceCurrency": "AZN", "price": str(product.rental_price or "0"), "unitText": "DAY"}
 
     return render(request, "catalog/product_detail.html", {
         "product": product,
@@ -331,13 +291,7 @@ def healthz(request):
 @require_GET
 def robots_txt(request):
     base_url = settings.SITE_URL.rstrip("/")
-    content = "\n".join([
-        "User-agent: *",
-        "Allow: /",
-        "Disallow: /admin/",
-        "Disallow: /ajax/",
-        f"Sitemap: {base_url}/sitemap.xml",
-    ])
+    content = "\n".join(["User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /ajax/", f"Sitemap: {base_url}/sitemap.xml"])
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 
@@ -351,17 +305,8 @@ def ajax_set_language(request):
 
 
 def ajax_booked_dates(request, product_id):
-    product = get_object_or_404(
-        Product.objects.prefetch_related("colors"),
-        pk=product_id,
-        is_active=True,
-        product_type=Product.RENTAL,
-    )
-    reservations = product.reservations.filter(
-        status__in=[Reservation.PENDING, Reservation.CONFIRMED],
-        end_date__gte=date.today(),
-    )
-
+    product = get_object_or_404(Product.objects.prefetch_related("colors"), pk=product_id, is_active=True, product_type=Product.RENTAL)
+    reservations = product.reservations.filter(status__in=[Reservation.PENDING, Reservation.CONFIRMED], end_date__gte=date.today())
     color_id = request.GET.get("color", "").strip()
     if product.colors.exists():
         if not color_id.isdigit() or not product.colors.filter(pk=int(color_id)).exists():
@@ -369,12 +314,8 @@ def ajax_booked_dates(request, product_id):
         reservations = reservations.filter(color_id=int(color_id))
     else:
         reservations = reservations.filter(color__isnull=True)
-
-    ranges = [
-        {"start": reservation.start_date.isoformat(), "end": reservation.end_date.isoformat()}
-        for reservation in reservations.only("start_date", "end_date")
-    ]
-    return JsonResponse({"ranges": ranges, "today": date.today().isoformat()})
+    ranges = [{"start": reservation.start_date.isoformat(), "end": reservation.end_date.isoformat()} for reservation in reservations.only("start_date", "end_date")]
+    return JsonResponse({"ranges": ranges, "today": date.today().isoformat(), "daily_price": str(product.rental_price or "0")})
 
 
 @require_POST
@@ -382,17 +323,12 @@ def ajax_reserve(request, product_id):
     form = ReservationForm(request.POST)
     if not form.is_valid():
         return JsonResponse({"ok": False, "error": "invalid_form", "errors": form.errors.get_json_data()}, status=400)
-
     try:
         with transaction.atomic():
-            product = get_object_or_404(
-                Product.objects.select_for_update().prefetch_related("colors"),
-                pk=product_id,
-                is_active=True,
-                product_type=Product.RENTAL,
-            )
+            product = get_object_or_404(Product.objects.select_for_update().prefetch_related("colors"), pk=product_id, is_active=True, product_type=Product.RENTAL)
             reservation = form.save(commit=False)
             reservation.product = product
+            reservation.calculate_pricing()
             reservation.full_clean()
             reservation.save()
     except ValidationError as exc:
@@ -407,4 +343,7 @@ def ajax_reserve(request, product_id):
         "status": reservation.status,
         "start": reservation.start_date.isoformat(),
         "end": reservation.end_date.isoformat(),
+        "daily_price": str(reservation.daily_price),
+        "rental_days": reservation.rental_days,
+        "total_price": str(reservation.total_price),
     })

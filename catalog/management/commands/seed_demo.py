@@ -17,97 +17,35 @@ class Command(BaseCommand):
         "ivory": (229, 224, 214),
     }
 
+    PRODUCT_DETAILS = {
+        "material_az": "Premium atelye parçası",
+        "material_ru": "Премиальная ткань ателье",
+        "material_en": "Premium atelier fabric",
+        "composition_az": "Dəqiq tərkib məhsul etiketinə uyğun göstərilir",
+        "composition_ru": "Точный состав указывается по ярлыку изделия",
+        "composition_en": "Exact composition follows the garment label",
+        "fit_az": "Siluet və oturuş modeldən asılıdır",
+        "fit_ru": "Силуэт и посадка зависят от модели",
+        "fit_en": "Silhouette and fit depend on the design",
+        "length_az": "Uzunluq modeldən asılıdır və fitting zamanı dəqiqləşdirilir",
+        "length_ru": "Длина зависит от модели и уточняется на примерке",
+        "length_en": "Length varies by design and is confirmed at fitting",
+        "care_az": "Peşəkar quru təmizləmə tövsiyə olunur",
+        "care_ru": "Рекомендуется профессиональная химчистка",
+        "care_en": "Professional dry cleaning is recommended",
+    }
+
     REAL_DRESSES = [
-        {
-            "file": "dress_1.jpeg",
-            "slug": "celeste-evening-dress",
-            "name_az": "Celeste axşam donu",
-            "name_ru": "Вечернее платье Celeste",
-            "name_en": "Celeste Evening Dress",
-            "price": 150,
-            "sizes": "XS, S, M",
-        },
-        {
-            "file": "dress_2.jpeg",
-            "slug": "amara-evening-dress",
-            "name_az": "Amara axşam donu",
-            "name_ru": "Вечернее платье Amara",
-            "name_en": "Amara Evening Dress",
-            "price": 170,
-            "sizes": "S, M, L",
-        },
-        {
-            "file": "dress_3.jpeg",
-            "slug": "elara-evening-dress",
-            "name_az": "Elara axşam donu",
-            "name_ru": "Вечернее платье Elara",
-            "name_en": "Elara Evening Dress",
-            "price": 180,
-            "sizes": "XS, S, M, L",
-        },
-        {
-            "file": "dress_4.jpg",
-            "slug": "noelle-evening-dress",
-            "name_az": "Noelle axşam donu",
-            "name_ru": "Вечернее платье Noelle",
-            "name_en": "Noelle Evening Dress",
-            "price": 200,
-            "sizes": "S, M",
-        },
-        {
-            "file": "dress_5.jpeg",
-            "slug": "seraphine-evening-dress",
-            "name_az": "Seraphine axşam donu",
-            "name_ru": "Вечернее платье Seraphine",
-            "name_en": "Seraphine Evening Dress",
-            "price": 165,
-            "sizes": "XS, S, M",
-        },
-        {
-            "file": "dress_6.jpeg",
-            "slug": "mirelle-evening-dress",
-            "name_az": "Mirelle axşam donu",
-            "name_ru": "Вечернее платье Mirelle",
-            "name_en": "Mirelle Evening Dress",
-            "price": 145,
-            "sizes": "S, M, L",
-        },
-        {
-            "file": "dress_7.avif",
-            "slug": "verona-evening-dress",
-            "name_az": "Verona axşam donu",
-            "name_ru": "Вечернее платье Verona",
-            "name_en": "Verona Evening Dress",
-            "price": 190,
-            "sizes": "XS, S, M, L",
-        },
-        {
-            "file": "dress_8.jpg",
-            "slug": "aveline-evening-dress",
-            "name_az": "Aveline axşam donu",
-            "name_ru": "Вечернее платье Aveline",
-            "name_en": "Aveline Evening Dress",
-            "price": 210,
-            "sizes": "S, M",
-        },
-        {
-            "file": "dress_9.jpg",
-            "slug": "liora-evening-dress",
-            "name_az": "Liora axşam donu",
-            "name_ru": "Вечернее платье Liora",
-            "name_en": "Liora Evening Dress",
-            "price": 175,
-            "sizes": "XS, S, M",
-        },
-        {
-            "file": "dress_10.webp",
-            "slug": "solenne-evening-dress",
-            "name_az": "Solenne axşam donu",
-            "name_ru": "Вечернее платье Solenne",
-            "name_en": "Solenne Evening Dress",
-            "price": 220,
-            "sizes": "S, M, L",
-        },
+        {"file": "dress_1.jpeg", "slug": "celeste-evening-dress", "name_az": "Celeste axşam donu", "name_ru": "Вечернее платье Celeste", "name_en": "Celeste Evening Dress", "price": 150, "sizes": "XS, S, M"},
+        {"file": "dress_2.jpeg", "slug": "amara-evening-dress", "name_az": "Amara axşam donu", "name_ru": "Вечернее платье Amara", "name_en": "Amara Evening Dress", "price": 170, "sizes": "S, M, L"},
+        {"file": "dress_3.jpeg", "slug": "elara-evening-dress", "name_az": "Elara axşam donu", "name_ru": "Вечернее платье Elara", "name_en": "Elara Evening Dress", "price": 180, "sizes": "XS, S, M, L"},
+        {"file": "dress_4.jpg", "slug": "noelle-evening-dress", "name_az": "Noelle axşam donu", "name_ru": "Вечернее платье Noelle", "name_en": "Noelle Evening Dress", "price": 200, "sizes": "S, M"},
+        {"file": "dress_5.jpeg", "slug": "seraphine-evening-dress", "name_az": "Seraphine axşam donu", "name_ru": "Вечернее платье Seraphine", "name_en": "Seraphine Evening Dress", "price": 165, "sizes": "XS, S, M"},
+        {"file": "dress_6.jpeg", "slug": "mirelle-evening-dress", "name_az": "Mirelle axşam donu", "name_ru": "Вечернее платье Mirelle", "name_en": "Mirelle Evening Dress", "price": 145, "sizes": "S, M, L"},
+        {"file": "dress_7.avif", "slug": "verona-evening-dress", "name_az": "Verona axşam donu", "name_ru": "Вечернее платье Verona", "name_en": "Verona Evening Dress", "price": 190, "sizes": "XS, S, M, L"},
+        {"file": "dress_8.jpg", "slug": "aveline-evening-dress", "name_az": "Aveline axşam donu", "name_ru": "Вечернее платье Aveline", "name_en": "Aveline Evening Dress", "price": 210, "sizes": "S, M"},
+        {"file": "dress_9.jpg", "slug": "liora-evening-dress", "name_az": "Liora axşam donu", "name_ru": "Вечернее платье Liora", "name_en": "Liora Evening Dress", "price": 175, "sizes": "XS, S, M"},
+        {"file": "dress_10.webp", "slug": "solenne-evening-dress", "name_az": "Solenne axşam donu", "name_ru": "Вечернее платье Solenne", "name_en": "Solenne Evening Dress", "price": 220, "sizes": "S, M, L"},
     ]
 
     def handle(self, *args, **options):
@@ -120,22 +58,10 @@ class Command(BaseCommand):
             defaults={"name_az": "Dəstlər", "name_ru": "Комплекты", "name_en": "Sets", "sort_order": 2},
         )
 
-        black, _ = Color.objects.update_or_create(
-            name_en="Black",
-            defaults={"name_az": "Qara", "name_ru": "Черный", "hex_code": "#1f1f1f"},
-        )
-        burgundy, _ = Color.objects.update_or_create(
-            name_en="Burgundy",
-            defaults={"name_az": "Bordo", "name_ru": "Бордовый", "hex_code": "#6f1d2e"},
-        )
-        ivory, _ = Color.objects.update_or_create(
-            name_en="Ivory",
-            defaults={"name_az": "Fil sümüyü", "name_ru": "Айвори", "hex_code": "#e5e0d6"},
-        )
-        as_pictured, _ = Color.objects.update_or_create(
-            name_en="As pictured",
-            defaults={"name_az": "Şəkildəki rəng", "name_ru": "Цвет на фото", "hex_code": "#b8afa5"},
-        )
+        black, _ = Color.objects.update_or_create(name_en="Black", defaults={"name_az": "Qara", "name_ru": "Черный", "hex_code": "#1f1f1f"})
+        burgundy, _ = Color.objects.update_or_create(name_en="Burgundy", defaults={"name_az": "Bordo", "name_ru": "Бордовый", "hex_code": "#6f1d2e"})
+        ivory, _ = Color.objects.update_or_create(name_en="Ivory", defaults={"name_az": "Fil sümüyü", "name_ru": "Айвори", "hex_code": "#e5e0d6"})
+        as_pictured, _ = Color.objects.update_or_create(name_en="As pictured", defaults={"name_az": "Şəkildəki rəng", "name_ru": "Цвет на фото", "hex_code": "#b8afa5"})
 
         p1, _ = Product.objects.update_or_create(
             slug="aurelia-evening-dress",
@@ -144,9 +70,10 @@ class Command(BaseCommand):
                 "name_az": "Aurelia axşam donu",
                 "name_ru": "Вечернее платье Aurelia",
                 "name_en": "Aurelia Evening Dress",
-                "description_az": "Kirayə üçün zərif axşam donu. Demo kart rəngə görə ayrıca foto qalereyası, bron təqvimi və 360° baxışı göstərir.",
-                "description_ru": "Вечернее платье для аренды. Демо-карточка показывает отдельную галерею по цветам, календарь бронирования и 360° обзор.",
-                "description_en": "An evening rental dress demonstrating color-specific galleries, booking availability and a 360° viewer.",
+                "description_az": "Kirayə üçün zərif axşam donu. Rəngə görə ayrıca foto qalereyası, bron təqvimi və 360° baxış mövcuddur.",
+                "description_ru": "Элегантное вечернее платье для аренды. Доступны отдельные фото по цветам, календарь бронирования и 360° обзор.",
+                "description_en": "An elegant evening rental dress with color-specific galleries, booking availability and a 360° viewer.",
+                **self.PRODUCT_DETAILS,
                 "product_type": Product.RENTAL,
                 "rental_price": 180,
                 "sale_price": None,
@@ -168,6 +95,7 @@ class Command(BaseCommand):
                 "description_az": "Ölçülərinizə uyğun fərdi tikiş, parça və rəng seçimi ilə.",
                 "description_ru": "Индивидуальный пошив по меркам с выбором ткани и цвета.",
                 "description_en": "Made to measure with fabric and color selection.",
+                **self.PRODUCT_DETAILS,
                 "product_type": Product.CUSTOM,
                 "rental_price": None,
                 "sale_price": None,
@@ -189,6 +117,7 @@ class Command(BaseCommand):
                 "description_az": "Tədbir, şam yeməyi və ya çəkiliş üçün kirayəyə hazır dəst.",
                 "description_ru": "Готовый комплект для аренды на событие, ужин или съемку.",
                 "description_en": "A ready tailored set available for event, dinner or editorial rental.",
+                **self.PRODUCT_DETAILS,
                 "product_type": Product.RENTAL,
                 "rental_price": 140,
                 "sale_price": None,
@@ -210,6 +139,7 @@ class Command(BaseCommand):
                 "description_az": "Cari kolleksiyadan artıq tikilmiş don. Fittingdən sonra almaq mümkündür.",
                 "description_ru": "Уже сшитое платье из текущей коллекции. Доступно для покупки после примерки.",
                 "description_en": "A finished piece from the current collection, available to purchase after fitting.",
+                **self.PRODUCT_DETAILS,
                 "product_type": Product.READY,
                 "rental_price": None,
                 "sale_price": 720,
@@ -227,7 +157,7 @@ class Command(BaseCommand):
         self._ensure_demo_media(p4, [ivory, burgundy])
         self._import_real_dresses(dresses, as_pictured)
 
-        self.stdout.write(self.style.SUCCESS("Catalog, dresses and Step 4 media are ready."))
+        self.stdout.write(self.style.SUCCESS("Catalog, dress details and daily pricing are ready."))
 
     def _import_real_dresses(self, category, color):
         source_dir = Path(settings.BASE_DIR) / "dresses"
@@ -235,9 +165,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("/dresses folder was not found; real dress import skipped."))
             return
 
-        description_az = "Atelye kolleksiyasından seçilmiş don. Tədbir və çəkiliş üçün kirayəyə verilir; rəng, ölçü və boş tarixlər məhsul səhifəsində seçilir."
-        description_ru = "Платье из коллекции ателье для аренды на событие или съемку. Цвет, размер и свободные даты выбираются в карточке изделия."
-        description_en = "A selected atelier dress available for event or editorial rental. Choose the color, size and available dates on the product page."
+        description_az = "Atelye kolleksiyasından seçilmiş don. Tədbir və çəkiliş üçün günlük kirayəyə verilir; rəng, ölçü və boş tarixlər məhsul səhifəsində seçilir."
+        description_ru = "Платье из коллекции ателье для посуточной аренды на событие или съемку. Цвет, размер и свободные даты выбираются в карточке изделия."
+        description_en = "A selected atelier dress available for daily event or editorial rental. Choose the color, size and available dates on the product page."
 
         for index, item in enumerate(self.REAL_DRESSES):
             product, _ = Product.objects.update_or_create(
@@ -250,6 +180,7 @@ class Command(BaseCommand):
                     "description_az": description_az,
                     "description_ru": description_ru,
                     "description_en": description_en,
+                    **self.PRODUCT_DETAILS,
                     "product_type": Product.RENTAL,
                     "rental_price": item["price"],
                     "sale_price": None,
@@ -263,24 +194,13 @@ class Command(BaseCommand):
             self._import_gallery_photo(product, color, source_dir / item["file"])
 
     def _import_gallery_photo(self, product, color, source_path):
-        photo = product.images.filter(
-            image_type=ProductImage.GALLERY,
-            color=color,
-            sort_order=0,
-        ).first()
-
+        photo = product.images.filter(image_type=ProductImage.GALLERY, color=color, sort_order=0).first()
         if not photo:
             if not source_path.exists():
                 self.stdout.write(self.style.WARNING(f"Missing dress image: {source_path.name}"))
                 return
             with source_path.open("rb") as fh:
-                photo = ProductImage(
-                    product=product,
-                    color=color,
-                    image_type=ProductImage.GALLERY,
-                    angle=0,
-                    sort_order=0,
-                )
+                photo = ProductImage(product=product, color=color, image_type=ProductImage.GALLERY, angle=0, sort_order=0)
                 photo.image.save(f"{product.slug}{source_path.suffix.lower()}", File(fh), save=True)
 
         if photo and product.cover_image.name != photo.image.name:
@@ -294,46 +214,21 @@ class Command(BaseCommand):
         first_cover = None
 
         for color in colors:
-            frames = product.images.filter(
-                color=color,
-                image_type=ProductImage.SPIN_360,
-            ).order_by("angle", "sort_order")
-
+            frames = product.images.filter(color=color, image_type=ProductImage.SPIN_360).order_by("angle", "sort_order")
             if not frames.exists():
                 rgb = self.PALETTE.get(color.name_en.lower(), (40, 40, 40))
                 for idx, angle in enumerate(angles):
                     path = demo_dir / f"{product.slug}-{color.id}-{angle}.png"
                     self._draw_frame(path, rgb, angle, product.product_type)
                     with path.open("rb") as fh:
-                        frame = ProductImage(
-                            product=product,
-                            color=color,
-                            image_type=ProductImage.SPIN_360,
-                            angle=angle,
-                            sort_order=idx,
-                        )
+                        frame = ProductImage(product=product, color=color, image_type=ProductImage.SPIN_360, angle=angle, sort_order=idx)
                         frame.image.save(path.name, File(fh), save=True)
-                frames = product.images.filter(
-                    color=color,
-                    image_type=ProductImage.SPIN_360,
-                ).order_by("angle", "sort_order")
+                frames = product.images.filter(color=color, image_type=ProductImage.SPIN_360).order_by("angle", "sort_order")
 
             first_frame = frames.first()
-            gallery_photo = product.images.filter(
-                color=color,
-                image_type=ProductImage.GALLERY,
-            ).order_by("sort_order", "id").first()
-
+            gallery_photo = product.images.filter(color=color, image_type=ProductImage.GALLERY).order_by("sort_order", "id").first()
             if not gallery_photo and first_frame:
-                gallery_photo = ProductImage.objects.create(
-                    product=product,
-                    color=color,
-                    image=first_frame.image.name,
-                    image_type=ProductImage.GALLERY,
-                    angle=0,
-                    sort_order=0,
-                )
-
+                gallery_photo = ProductImage.objects.create(product=product, color=color, image=first_frame.image.name, image_type=ProductImage.GALLERY, angle=0, sort_order=0)
             if first_cover is None and gallery_photo:
                 first_cover = gallery_photo.image.name
 
@@ -345,7 +240,6 @@ class Command(BaseCommand):
         width, height = 900, 1100
         image = Image.new("RGB", (width, height), (242, 239, 234))
         draw = ImageDraw.Draw(image)
-
         draw.rectangle((95, 70, 805, 1030), fill=(235, 231, 225))
         cx = width // 2
         yaw = abs(((angle + 90) % 180) - 90) / 90
@@ -354,23 +248,9 @@ class Command(BaseCommand):
         hem_w = int(body_w * 1.55)
 
         if product_type == Product.CUSTOM:
-            points = [
-                (cx - shoulder_w // 2, 245),
-                (cx + shoulder_w // 2, 245),
-                (cx + body_w // 2, 510),
-                (cx + hem_w // 2, 900),
-                (cx - hem_w // 2, 900),
-                (cx - body_w // 2, 510),
-            ]
+            points = [(cx - shoulder_w // 2, 245), (cx + shoulder_w // 2, 245), (cx + body_w // 2, 510), (cx + hem_w // 2, 900), (cx - hem_w // 2, 900), (cx - body_w // 2, 510)]
         else:
-            points = [
-                (cx - shoulder_w // 2, 250),
-                (cx + shoulder_w // 2, 250),
-                (cx + body_w // 2, 500),
-                (cx + hem_w // 2, 850),
-                (cx - hem_w // 2, 850),
-                (cx - body_w // 2, 500),
-            ]
+            points = [(cx - shoulder_w // 2, 250), (cx + shoulder_w // 2, 250), (cx + body_w // 2, 500), (cx + hem_w // 2, 850), (cx - hem_w // 2, 850), (cx - body_w // 2, 500)]
         draw.polygon(points, fill=rgb)
         draw.ellipse((cx - 58, 135, cx + 58, 251), fill=(214, 197, 183))
         draw.line((cx - shoulder_w // 2, 300, cx - body_w, 560), fill=rgb, width=42)

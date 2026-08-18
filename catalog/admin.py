@@ -27,6 +27,72 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name_en",)}
     filter_horizontal = ("colors",)
     inlines = [ProductImageInline]
+    fieldsets = (
+        (
+            "Основное",
+            {
+                "fields": (
+                    "category",
+                    "slug",
+                    "product_type",
+                    "sizes",
+                    "colors",
+                    "cover_image",
+                    "is_featured",
+                    "is_active",
+                )
+            },
+        ),
+        (
+            "AZ",
+            {
+                "fields": (
+                    "name_az",
+                    "description_az",
+                    "material_az",
+                    "composition_az",
+                    "fit_az",
+                    "length_az",
+                    "care_az",
+                )
+            },
+        ),
+        (
+            "RU",
+            {
+                "fields": (
+                    "name_ru",
+                    "description_ru",
+                    "material_ru",
+                    "composition_ru",
+                    "fit_ru",
+                    "length_ru",
+                    "care_ru",
+                )
+            },
+        ),
+        (
+            "EN",
+            {
+                "fields": (
+                    "name_en",
+                    "description_en",
+                    "material_en",
+                    "composition_en",
+                    "fit_en",
+                    "length_en",
+                    "care_en",
+                )
+            },
+        ),
+        (
+            "Цены",
+            {
+                "fields": ("rental_price", "sale_price", "custom_price"),
+                "description": "Для аренды rental_price — цена за один календарный день.",
+            },
+        ),
+    )
 
 
 @admin.register(Category)
@@ -70,6 +136,9 @@ class ReservationAdmin(admin.ModelAdmin):
         "customer_name",
         "start_date",
         "end_date",
+        "rental_days",
+        "daily_price",
+        "total_price",
         "status",
         "created_at",
     )
@@ -78,7 +147,12 @@ class ReservationAdmin(admin.ModelAdmin):
     list_select_related = ("product", "color")
     date_hierarchy = "start_date"
     actions = [confirm_reservations, cancel_reservations]
-    readonly_fields = ("booking_id", "created_at")
+    readonly_fields = ("booking_id", "daily_price", "rental_days", "total_price", "created_at")
+
+    def save_model(self, request, obj, form, change):
+        if not change or {"product", "start_date", "end_date"} & set(form.changed_data):
+            obj.calculate_pricing()
+        super().save_model(request, obj, form, change)
 
     @admin.display(description="Код брони")
     def short_code_admin(self, obj):
