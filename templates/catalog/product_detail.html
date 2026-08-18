@@ -1,5 +1,5 @@
-{% load static %}
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}{% endblock %}
 {% block content %}
 <section class="product-detail section-wide">

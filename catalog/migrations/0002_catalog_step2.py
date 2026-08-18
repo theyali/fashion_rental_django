@@ -1,6 +1,11 @@
 from django.db import migrations, models
 
 
+def move_legacy_ready_products_to_rental(apps, schema_editor):
+    Product = apps.get_model("catalog", "Product")
+    Product.objects.filter(product_type="ready").update(product_type="rental")
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("catalog", "0001_initial"),
@@ -19,6 +24,10 @@ class Migration(migrations.Migration):
                 default="rental",
                 max_length=12,
             ),
+        ),
+        migrations.RunPython(
+            move_legacy_ready_products_to_rental,
+            migrations.RunPython.noop,
         ),
         migrations.AddField(
             model_name="product",

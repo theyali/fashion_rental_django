@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
@@ -67,7 +68,7 @@ def catalog(request):
     else:
         color = ""
     if size in {"XS", "S", "M", "L", "XL", "XXL"}:
-        products = products.filter(sizes__icontains=size)
+        products = products.filter(sizes__iregex=rf"(^|,\s*){re.escape(size)}(\s*,|$)")
     else:
         size = ""
 
@@ -81,12 +82,13 @@ def catalog(request):
         except (InvalidOperation, ValueError):
             price_max = ""
 
+    name_sort_field = "name_en" if _lang(request) == "en" else "name_ru"
     sort_options = {
         "featured": ("-is_featured", "-id"),
         "newest": ("-id",),
         "price_asc": ("catalog_price", "-is_featured"),
         "price_desc": ("-catalog_price", "-is_featured"),
-        "name": ("name_ru",),
+        "name": (name_sort_field,),
     }
     if sort not in sort_options:
         sort = "featured"
