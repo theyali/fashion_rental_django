@@ -4,11 +4,54 @@
 {% block content %}
 <section class="product-detail section-wide">
   <div class="product-viewer-wrap">
-    <div class="product-viewer" id="viewer360" data-frames='{{ frames_json|safe }}'>
-      {% if product.cover_image %}<img id="viewerImage" src="{{ product.cover_image.url }}" alt="{{ product.name_ru }}">{% endif %}
-      <div class="viewer-hint"><span>↔</span> <span data-i18n="viewer360">{{ ui.viewer360 }}</span></div>
+    {{ media_by_color|json_script:"productMediaData" }}
+
+    <div class="media-mode-switch" aria-label="Media mode">
+      <button type="button" class="media-mode-btn active" data-media-mode="photos">
+        {% if site_lang == 'en' %}Photos{% elif site_lang == 'ru' %}Фото{% else %}Fotolar{% endif %}
+      </button>
+      <button type="button" class="media-mode-btn" data-media-mode="spin">
+        360°
+      </button>
     </div>
-    <div class="viewer-progress"><span id="viewerAngle">0°</span><div><i id="viewerProgress"></i></div></div>
+
+    <div
+      class="product-viewer is-photo"
+      id="viewer360"
+      data-cover-url="{% if product.cover_image %}{{ product.cover_image.url }}{% endif %}"
+    >
+      <img
+        id="viewerImage"
+        {% if product.cover_image %}src="{{ product.cover_image.url }}"{% endif %}
+        alt="{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}"
+        draggable="false"
+      >
+
+      <button type="button" class="media-arrow media-arrow--prev" id="mediaPrev" aria-label="Previous photo">←</button>
+      <button type="button" class="media-arrow media-arrow--next" id="mediaNext" aria-label="Next photo">→</button>
+      <div class="media-counter" id="mediaCounter"></div>
+
+      <div class="viewer-hint" id="viewerHint" hidden>
+        <span>↔</span>
+        <span>{% if site_lang == 'en' %}Drag to rotate{% elif site_lang == 'ru' %}Потяните, чтобы вращать{% else %}Fırlatmaq üçün sürüşdürün{% endif %}</span>
+      </div>
+
+      <div class="spin-unavailable" id="spinUnavailable" hidden>
+        <strong>360°</strong>
+        <span>
+          {% if site_lang == 'en' %}360° view is not uploaded for this color yet.
+          {% elif site_lang == 'ru' %}Для этого цвета 360° обзор пока не загружен.
+          {% else %}Bu rəng üçün 360° baxış hələ əlavə edilməyib.{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="viewer-progress" id="viewerProgressWrap" hidden>
+      <span id="viewerAngle">0°</span>
+      <div><i id="viewerProgress"></i></div>
+    </div>
+
+    <div class="media-thumbs" id="galleryThumbs" aria-label="Product photos"></div>
   </div>
 
   <div class="product-info">

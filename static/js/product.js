@@ -43,10 +43,172 @@
     }
   }[lang];
 
-  const framesByColor = viewer.length ? (viewer.data('frames') || {}) : {};
-  let activeFrames = [];
+  let mediaByColor = {};
+  const mediaDataNode = document.getElementById('productMediaData');
+  if (mediaDataNode) {
+    try {
+      mediaByColor = JSON.parse(mediaDataNode.textContent || '{}');
+    } catch (error) {
+      mediaByColor = {};
+    }
+  }
+
+  const coverUrl = viewer.data('cover-url') || '';
+  let activeMedia = {photos: [], frames: []};
+  let mediaMode = 'photos';
+  let photoIndex = 0;
   let frameIndex = 0;
   let dragStartX = null;
+  let dragPointerId = null;
+
+  function firstMediaBucket() {
+    return Object.values(mediaByColor).find(bucket => (bucket.photos || []).length || (bucket.frames || []).length) || {photos: [], frames: []};
+  }
+
+  function bucketForColor(colorId) {
+    return mediaByColor[String(colorId)] || mediaByColor.default || firstMediaBucket();
+  }
+
+  function setMediaForColor(colorId) {
+    const bucket = bucketForColor(colorId);
+    activeMedia = {
+      photos: Array.isArray(bucket.photos) ? bucket.photos : [],
+      frames: Array.isArray(bucket.frames) ? bucket.frames : []
+    };
+    photoIndex = 0;
+    frameIndex = 0;
+    renderMedia();
+  }
+
+  function setMediaMode(mode) {
+    mediaMode = mode === 'spin' ? 'spin' : 'photos';
+    renderMedia();
+  }
+
+  function setViewerImage(url) {
+    const image = $('#viewerImage');
+    if (url) {
+      image.attr('src', url).prop('hidden', false);
+    } else {
+      image.removeAttr('src').prop('hidden', true);
+    }
+  }
+
+  function renderThumbs() {
+    const thumbs = $('#galleryThumbs').empty();
+    if (mediaMode !== 'photos' || !activeMedia.photos.length) {
+      thumbs.prop('hidden', true);
+      return;
+    }
+
+    thumbs.prop('hidden', false);
+    activeMedia.photos.forEach(function (photo, index) {
+      const button = $('<button type="button" class="media-thumb"></button>')
+        .toggleClass('active', index === photoIndex)
+        .attr('aria-label', `Photo ${index + 1}`)
+        .on('click', function () {
+          photoIndex = index;
+          renderMedia();
+        });
+      $('<img alt="">').attr('src', photo.url).appendTo(button);
+      thumbs.append(button);
+    });
+  }
+
+  function renderPhotos() {
+    const photos = activeMedia.photos;
+    const photo = photos[photoIndex] || null;
+    setViewerImage(photo ? photo.url : coverUrl);
+
+    $('#viewerHint, #spinUnavailable, #viewerProgressWrap').prop('hidden', true);
+    $('#mediaPrev, #mediaNext').prop('hidden', photos.length <= 1);
+    $('#mediaCounter')
+      .prop('hidden', photos.length <= 1)
+      .text(photos.length ? `${photoIndex + 1} / ${photos.length}` : '');
+    viewer.removeClass('is-spin is-dragging').addClass('is-photo');
+    renderThumbs();
+  }
+
+  function renderSpin() {
+    const frames = activeMedia.frames;
+    $('#mediaPrev, #mediaNext, #mediaCounter, #galleryThumbs').prop('hidden', true);
+    viewer.removeClass('is-photo').addClass('is-spin');
+
+    if (!frames.length) {
+      const fallbackPhoto = activeMedia.photos[photoIndex] || activeMedia.photos[0];
+      setViewerImage(fallbackPhoto ? fallbackPhoto.url : coverUrl);
+      $('#viewerHint, #viewerProgressWrap').prop('hidden', true);
+      $('#spinUnavailable').prop('hidden', false);
+      return;
+    }
+
+    frameIndex = (frameIndex + frames.length) % frames.length;
+    const frame = frames[frameIndex];
+    setViewerImage(frame.url);
+    $('#spinUnavailable').prop('hidden', true);
+    $('#viewerHint, #viewerProgressWrap').prop('hidden', false);
+    $('#viewerAngle').text(`${frame.angle}°`);
+    $('#viewerProgress').css('width', `${((frameIndex + 1) / frames.length) * 100}%`);
+  }
+
+  function renderMedia() {
+    $('.media-mode-btn').removeClass('active');
+    $(`.media-mode-btn[data-media-mode="${mediaMode}"]`).addClass('active');
+
+    if (mediaMode === 'spin') renderSpin();
+    else renderPhotos();
+  }
+
+  function stepFrame(delta) {
+    if (mediaMode !== 'spin' || activeMedia.frames.length < 2) return;
+    frameIndex = (frameIndex + delta + activeMedia.frames.length) % activeMedia.frames.length;
+    renderSpin();
+  }
+
+  $('.media-mode-btn').on('click', function () {
+    setMediaMode($(this).data('media-mode'));
+  });
+
+  $('#mediaPrev').on('click', function () {
+    if (activeMedia.photos.length <= 1) return;
+    photoIndex = (photoIndex - 1 + activeMedia.photos.length) % activeMedia.photos.length;
+    renderMedia();
+  });
+
+  $('#mediaNext').on('click', function () {
+    if (activeMedia.photos.length <= 1) return;
+    photoIndex = (photoIndex + 1) % activeMedia.photos.length;
+    renderMedia();
+  });
+
+  if (viewer.length) {
+    viewer.on('pointerdown', function (event) {
+      if (mediaMode !== 'spin' || activeMedia.frames.length < 2) return;
+      const original = event.originalEvent;
+      dragStartX = original.clientX;
+      dragPointerId = original.pointerId;
+      viewer.addClass('is-dragging');
+      if (this.setPointerCapture && dragPointerId !== undefined) {
+        this.setPointerCapture(dragPointerId);
+      }
+    });
+
+    viewer.on('pointermove', function (event) {
+      if (dragStartX === null || mediaMode !== 'spin') return;
+      const original = event.originalEvent;
+      const diff = original.clientX - dragStartX;
+      if (Math.abs(diff) >= 18) {
+        stepFrame(diff > 0 ? -1 : 1);
+        dragStartX = original.clientX;
+      }
+    });
+
+    viewer.on('pointerup pointercancel lostpointercapture', function () {
+      dragStartX = null;
+      dragPointerId = null;
+      viewer.removeClass('is-dragging');
+    });
+  }
 
   const productId = booking.data('product-id');
   let blockedRanges = [];
@@ -57,47 +219,6 @@
   let end = null;
   let selectedColorId = '';
   let availabilityRequest = null;
-
-  function setFrames(colorId) {
-    activeFrames = framesByColor[String(colorId)] || framesByColor.default || Object.values(framesByColor)[0] || [];
-    frameIndex = 0;
-    renderFrame();
-  }
-
-  function renderFrame() {
-    if (!activeFrames.length) return;
-    const frame = activeFrames[frameIndex];
-    $('#viewerImage').attr('src', frame.url);
-    $('#viewerAngle').text(frame.angle + '°');
-    $('#viewerProgress').css('width', ((frameIndex + 1) / activeFrames.length * 100) + '%');
-  }
-
-  function stepFrame(delta) {
-    if (!activeFrames.length) return;
-    frameIndex = (frameIndex + delta + activeFrames.length) % activeFrames.length;
-    renderFrame();
-  }
-
-  if (viewer.length) {
-    viewer.on('mousedown touchstart', function (event) {
-      const point = event.originalEvent.touches ? event.originalEvent.touches[0] : event;
-      dragStartX = point.clientX;
-    });
-
-    $(document)
-      .on('mousemove touchmove', function (event) {
-        if (dragStartX === null) return;
-        const point = event.originalEvent.touches ? event.originalEvent.touches[0] : event;
-        const diff = point.clientX - dragStartX;
-        if (Math.abs(diff) > 24) {
-          stepFrame(diff > 0 ? -1 : 1);
-          dragStartX = point.clientX;
-        }
-      })
-      .on('mouseup touchend touchcancel', function () {
-        dragStartX = null;
-      });
-  }
 
   function iso(dateObject) {
     const year = dateObject.getFullYear();
@@ -274,7 +395,7 @@
     $('#selectedColorInput').val(selectedColorId);
     $('#selectedColorName').text(colorName);
     $('#bookingColorLabel').text(colorName);
-    setFrames(selectedColorId);
+    setMediaForColor(selectedColorId);
 
     if (booking.length) loadAvailability();
   });
@@ -286,7 +407,7 @@
   if ($('.swatch').length) {
     $('.swatch').first().trigger('click');
   } else {
-    setFrames('default');
+    setMediaForColor('default');
     if (booking.length) loadAvailability();
   }
 
@@ -368,6 +489,7 @@
     });
   });
 
+  setMediaMode('photos');
   updateSummary();
   renderCalendar();
 })(jQuery);

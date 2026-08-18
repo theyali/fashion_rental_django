@@ -6,6 +6,8 @@ from .models import Category, Color, ContactMessage, Product, ProductImage, Rese
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 0
+    fields = ("image_type", "color", "image", "angle", "sort_order")
+    ordering = ("image_type", "color", "sort_order", "angle")
 
 
 @admin.register(Product)
@@ -38,6 +40,14 @@ class CategoryAdmin(admin.ModelAdmin):
 class ColorAdmin(admin.ModelAdmin):
     list_display = ("name_az", "name_ru", "name_en", "hex_code")
     search_fields = ("name_az", "name_ru", "name_en")
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ("product", "image_type", "color", "angle", "sort_order")
+    list_filter = ("image_type", "color", "product")
+    search_fields = ("product__name_az", "product__name_ru", "product__name_en")
+    list_select_related = ("product", "color")
 
 
 @admin.action(description="Подтвердить выбранные бронирования")

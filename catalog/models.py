@@ -79,19 +79,29 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
+    GALLERY = "gallery"
+    SPIN_360 = "spin360"
+    IMAGE_TYPES = [
+        (GALLERY, "Фото галереи"),
+        (SPIN_360, "360° кадр"),
+    ]
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_images")
-    image = models.ImageField(upload_to="products/360/")
-    angle = models.PositiveSmallIntegerField(default=0, help_text="0..359")
+    image = models.ImageField(upload_to="products/media/")
+    image_type = models.CharField(max_length=12, choices=IMAGE_TYPES, default=GALLERY)
+    angle = models.PositiveSmallIntegerField(default=0, help_text="Для 360°: 0..359")
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ["color_id", "sort_order", "angle"]
+        ordering = ["image_type", "color_id", "sort_order", "angle", "id"]
         verbose_name = "Фото / 360 кадр"
         verbose_name_plural = "Фото / 360 кадры"
 
     def __str__(self):
-        return f"{self.product} — {self.angle}°"
+        if self.image_type == self.SPIN_360:
+            return f"{self.product} — {self.angle}°"
+        return f"{self.product} — фото"
 
 
 class Reservation(models.Model):

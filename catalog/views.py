@@ -1,4 +1,3 @@
-import json
 import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -11,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import ContactForm, ReservationForm
-from .models import Category, Color, Product, Reservation
+from .models import Category, Color, Product, ProductImage, Reservation
 
 
 SUPPORTED_LANGUAGES = {"az", "ru", "en"}
@@ -128,17 +127,30 @@ def product_detail(request, slug):
         slug=slug,
         is_active=True,
     )
-    frames_by_color = {}
+
+    media_by_color = {}
     for image in product.images.all():
         key = str(image.color_id or "default")
-        frames_by_color.setdefault(key, []).append({"angle": image.angle, "url": image.image.url})
-    for frames in frames_by_color.values():
-        frames.sort(key=lambda item: item["angle"])
+        bucket = media_by_color.setdefault(key, {"photos": [], "frames": []})
+        item = {
+            "id": image.id,
+            "url": image.image.url,
+            "angle": image.angle,
+            "sort": image.sort_order,
+        }
+        if image.image_type == ProductImage.SPIN_360:
+            bucket["frames"].append(item)
+        else:
+            bucket["photos"].append(item)
+
+    for bucket in media_by_color.values():
+        bucket["photos"].sort(key=lambda item: (item["sort"], item["id"]))
+        bucket["frames"].sort(key=lambda item: (item["angle"], item["sort"], item["id"]))
 
     return render(request, "catalog/product_detail.html", {
         "product": product,
         "product_sizes": _product_sizes(product),
-        "frames_json": json.dumps(frames_by_color),
+        "media_by_color": media_by_color,
     })
 
 
