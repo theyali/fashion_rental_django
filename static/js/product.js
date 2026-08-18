@@ -228,7 +228,7 @@
     return url;
   }
 
-  function loadAvailability() {
+  function loadAvailability(silent) {
     if (!booking.length) return;
 
     if ($('.swatch').length && !selectedColorId) {
@@ -240,7 +240,7 @@
     if (availabilityRequest) availabilityRequest.abort();
 
     booking.addClass('is-loading');
-    showMessage(text.loading, 'muted');
+    if (!silent) showMessage(text.loading, 'muted');
 
     availabilityRequest = $.ajax({
       url: availabilityUrl(),
@@ -249,13 +249,13 @@
         blockedRanges = data.ranges || [];
         resetRange();
         renderCalendar();
-        showMessage('', '');
+        if (!silent) showMessage('', '');
       },
       error: function () {
         blockedRanges = [];
         resetRange();
         renderCalendar();
-        showMessage(text.invalid, 'error');
+        if (!silent) showMessage(text.invalid, 'error');
       },
       complete: function () {
         booking.removeClass('is-loading');
@@ -350,7 +350,7 @@
           'success'
         );
         resetRange();
-        loadAvailability();
+        loadAvailability(true);
       },
       error: function (xhr) {
         const payload = xhr.responseJSON || {};
@@ -360,7 +360,7 @@
         if (errors.color) message = text.chooseColor;
         if (errors.size) message = text.chooseSize;
         showMessage(message, 'error');
-        loadAvailability();
+        loadAvailability(true);
       },
       complete: function () {
         submitButton.prop('disabled', false);

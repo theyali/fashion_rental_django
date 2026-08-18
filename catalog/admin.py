@@ -64,7 +64,7 @@ class ReservationAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "start_date", "product", "color", "size")
-    search_fields = ("booking_id", "customer_name", "email", "phone", "product__name_az", "product__name_ru", "product__name_en")
+    search_fields = ("customer_name", "email", "phone", "product__name_az", "product__name_ru", "product__name_en")
     list_select_related = ("product", "color")
     date_hierarchy = "start_date"
     actions = [confirm_reservations, cancel_reservations]
