@@ -13,6 +13,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN chmod +x /app/entrypoint.sh
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Run through sh so bind-mounted entrypoint.sh does not need the executable bit.
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
