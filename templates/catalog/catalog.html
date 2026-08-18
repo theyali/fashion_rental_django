@@ -1,25 +1,84 @@
 {% extends 'base.html' %}
 {% block title %}{{ ui.catalog }} · Atelier Rental{% endblock %}
 {% block content %}
-<section class="page-head">
-  <div class="eyebrow">THE WARDROBE</div>
-  <h1>{{ ui.catalog }}</h1>
+<section class="catalog-hero">
+  <div class="eyebrow">THE WARDROBE / 2026</div>
+  <div class="catalog-hero__row">
+    <h1>{{ ui.catalog }}</h1>
+    <p>{% if site_lang == 'en' %}Rental pieces, ready-made looks and made-to-order silhouettes in one curated wardrobe.{% else %}Аренда, готовые образы и индивидуальный пошив в одной тщательно собранной коллекции.{% endif %}</p>
+  </div>
 </section>
 
-<section class="catalog-toolbar section">
-  <div class="filter-group">
-    <a class="filter-pill {% if not active_type %}active{% endif %}" href="{% url 'catalog' %}">{{ ui.all }}</a>
-    <a class="filter-pill {% if active_type == 'ready' %}active{% endif %}" href="?type=ready">{{ ui.ready_made }}</a>
-    <a class="filter-pill {% if active_type == 'custom' %}active{% endif %}" href="?type=custom">{{ ui.made_to_order }}</a>
+<section class="catalog-controls section">
+  <div class="type-tabs" aria-label="Catalog type">
+    <a class="type-tab {% if not active_type %}active{% endif %}" href="{% url 'catalog' %}">{{ ui.all }}</a>
+    <a class="type-tab {% if active_type == 'rental' %}active{% endif %}" href="{% url 'catalog' %}?type=rental">{{ ui.rental }}</a>
+    <a class="type-tab {% if active_type == 'ready' %}active{% endif %}" href="{% url 'catalog' %}?type=ready">{{ ui.ready_made }}</a>
+    <a class="type-tab {% if active_type == 'custom' %}active{% endif %}" href="{% url 'catalog' %}?type=custom">{{ ui.made_to_order }}</a>
   </div>
-  <div class="filter-group categories">
-    {% for category in categories %}
-      <a class="filter-pill {% if active_category == category.slug %}active{% endif %}" href="?category={{ category.slug }}{% if active_type %}&type={{ active_type }}{% endif %}">{% if site_lang == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ru }}{% endif %}</a>
-    {% endfor %}
+
+  <form class="filter-panel" method="get">
+    {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
+    <label class="filter-field">
+      <span>{{ ui.category }}</span>
+      <select name="category">
+        <option value="">{{ ui.all }}</option>
+        {% for category in categories %}
+          <option value="{{ category.slug }}" {% if active_category == category.slug %}selected{% endif %}>{% if site_lang == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ru }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="filter-field">
+      <span>{{ ui.color }}</span>
+      <select name="color">
+        <option value="">{{ ui.all }}</option>
+        {% for color in colors %}
+          <option value="{{ color.id }}" {% if active_color == color.id|stringformat:'s' %}selected{% endif %}>{% if site_lang == 'en' %}{{ color.name_en }}{% else %}{{ color.name_ru }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="filter-field">
+      <span>{{ ui.size }}</span>
+      <select name="size">
+        <option value="">{{ ui.all }}</option>
+        {% for size in sizes %}<option value="{{ size }}" {% if active_size == size %}selected{% endif %}>{{ size }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="filter-field">
+      <span>{{ ui.max_price }}</span>
+      <input type="number" min="0" step="1" name="price_max" value="{{ active_price_max }}" placeholder="₼">
+    </label>
+    <label class="filter-field filter-field--sort">
+      <span>{{ ui.sort }}</span>
+      <select name="sort">
+        <option value="featured" {% if active_sort == 'featured' %}selected{% endif %}>{{ ui.featured_sort }}</option>
+        <option value="newest" {% if active_sort == 'newest' %}selected{% endif %}>{{ ui.newest_sort }}</option>
+        <option value="price_asc" {% if active_sort == 'price_asc' %}selected{% endif %}>{{ ui.price_low_sort }}</option>
+        <option value="price_desc" {% if active_sort == 'price_desc' %}selected{% endif %}>{{ ui.price_high_sort }}</option>
+        <option value="name" {% if active_sort == 'name' %}selected{% endif %}>{{ ui.name_sort }}</option>
+      </select>
+    </label>
+    <div class="filter-actions">
+      <button class="filter-submit" type="submit">{{ ui.apply_filters }}</button>
+      <a href="{% url 'catalog' %}">{{ ui.clear_filters }}</a>
+    </div>
+  </form>
+
+  <div class="catalog-summary">
+    <span>{{ result_count }} {{ ui.results }}</span>
+    <span class="catalog-summary__line"></span>
   </div>
 </section>
 
 <section class="product-grid section catalog-grid">
-  {% for product in products %}{% include 'partials/product_card.html' with product=product %}{% empty %}<p>No products</p>{% endfor %}
+  {% for product in products %}
+    {% include 'partials/product_card.html' with product=product %}
+  {% empty %}
+    <div class="catalog-empty">
+      <div class="eyebrow">NO RESULTS</div>
+      <h2>{{ ui.empty_catalog }}</h2>
+      <a class="text-link" href="{% url 'catalog' %}">{{ ui.clear_filters }} →</a>
+    </div>
+  {% endfor %}
 </section>
 {% endblock %}

@@ -18,14 +18,29 @@ class Command(BaseCommand):
     }
 
     def handle(self, *args, **options):
-        dresses, _ = Category.objects.get_or_create(slug="dresses", defaults={"name_ru": "Платья", "name_en": "Dresses", "sort_order": 1})
-        sets, _ = Category.objects.get_or_create(slug="sets", defaults={"name_ru": "Комплекты", "name_en": "Sets", "sort_order": 2})
+        dresses, _ = Category.objects.update_or_create(
+            slug="dresses",
+            defaults={"name_ru": "Платья", "name_en": "Dresses", "sort_order": 1},
+        )
+        sets, _ = Category.objects.update_or_create(
+            slug="sets",
+            defaults={"name_ru": "Комплекты", "name_en": "Sets", "sort_order": 2},
+        )
 
-        black, _ = Color.objects.get_or_create(name_en="Black", defaults={"name_ru": "Черный", "hex_code": "#1f1f1f"})
-        burgundy, _ = Color.objects.get_or_create(name_en="Burgundy", defaults={"name_ru": "Бордовый", "hex_code": "#6f1d2e"})
-        ivory, _ = Color.objects.get_or_create(name_en="Ivory", defaults={"name_ru": "Айвори", "hex_code": "#e5e0d6"})
+        black, _ = Color.objects.update_or_create(
+            name_en="Black",
+            defaults={"name_ru": "Черный", "hex_code": "#1f1f1f"},
+        )
+        burgundy, _ = Color.objects.update_or_create(
+            name_en="Burgundy",
+            defaults={"name_ru": "Бордовый", "hex_code": "#6f1d2e"},
+        )
+        ivory, _ = Color.objects.update_or_create(
+            name_en="Ivory",
+            defaults={"name_ru": "Айвори", "hex_code": "#e5e0d6"},
+        )
 
-        p1, _ = Product.objects.get_or_create(
+        p1, _ = Product.objects.update_or_create(
             slug="aurelia-evening-dress",
             defaults={
                 "category": dresses,
@@ -33,15 +48,18 @@ class Command(BaseCommand):
                 "name_en": "Aurelia Evening Dress",
                 "description_ru": "Лаконичное вечернее платье для аренды. Демо-карточка показывает механику календаря, цветов и 360° обзора.",
                 "description_en": "A minimal evening rental dress. This demo product shows booking, color selection and the 360° viewer.",
-                "product_type": Product.READY,
+                "product_type": Product.RENTAL,
                 "rental_price": 180,
+                "sale_price": None,
+                "custom_price": None,
                 "sizes": "XS, S, M, L",
                 "is_featured": True,
+                "is_active": True,
             },
         )
         p1.colors.set([black, burgundy, ivory])
 
-        p2, _ = Product.objects.get_or_create(
+        p2, _ = Product.objects.update_or_create(
             slug="selene-custom-dress",
             defaults={
                 "category": dresses,
@@ -50,31 +68,58 @@ class Command(BaseCommand):
                 "description_ru": "Индивидуальный пошив по меркам с выбором ткани и цвета.",
                 "description_en": "Made to measure with fabric and color selection.",
                 "product_type": Product.CUSTOM,
+                "rental_price": None,
+                "sale_price": None,
                 "custom_price": 950,
                 "sizes": "По индивидуальным меркам",
                 "is_featured": True,
+                "is_active": True,
             },
         )
         p2.colors.set([black, burgundy, ivory])
 
-        p3, _ = Product.objects.get_or_create(
+        p3, _ = Product.objects.update_or_create(
             slug="noir-tailored-set",
             defaults={
                 "category": sets,
                 "name_ru": "Комплект Noir",
                 "name_en": "Noir Tailored Set",
-                "description_ru": "Готовый комплект для аренды.",
-                "description_en": "Ready-made tailored set for rental.",
-                "product_type": Product.READY,
+                "description_ru": "Готовый комплект для аренды на событие, ужин или съемку.",
+                "description_en": "A ready tailored set available for event, dinner or editorial rental.",
+                "product_type": Product.RENTAL,
                 "rental_price": 140,
+                "sale_price": None,
+                "custom_price": None,
                 "sizes": "S, M, L",
+                "is_featured": False,
+                "is_active": True,
             },
         )
         p3.colors.set([black, ivory])
 
+        p4, _ = Product.objects.update_or_create(
+            slug="ivory-sculpted-dress",
+            defaults={
+                "category": dresses,
+                "name_ru": "Скульптурное платье Ivory",
+                "name_en": "Ivory Sculpted Dress",
+                "description_ru": "Уже сшитое платье из текущей коллекции. Доступно для покупки после примерки.",
+                "description_en": "A finished piece from the current collection, available to purchase after fitting.",
+                "product_type": Product.READY,
+                "rental_price": None,
+                "sale_price": 720,
+                "custom_price": None,
+                "sizes": "S, M",
+                "is_featured": True,
+                "is_active": True,
+            },
+        )
+        p4.colors.set([ivory, burgundy])
+
         self._ensure_frames(p1, [black, burgundy, ivory])
         self._ensure_frames(p2, [black, burgundy, ivory])
         self._ensure_frames(p3, [black, ivory])
+        self._ensure_frames(p4, [ivory, burgundy])
         self.stdout.write(self.style.SUCCESS("Demo catalog is ready."))
 
     def _ensure_frames(self, product, colors):
@@ -107,7 +152,6 @@ class Command(BaseCommand):
         image = Image.new("RGB", (width, height), (242, 239, 234))
         draw = ImageDraw.Draw(image)
 
-        # Subtle studio panel.
         draw.rectangle((95, 70, 805, 1030), fill=(235, 231, 225))
         cx = width // 2
         yaw = abs(((angle + 90) % 180) - 90) / 90
@@ -116,7 +160,6 @@ class Command(BaseCommand):
         hem_w = int(body_w * 1.55)
 
         if product_type == Product.CUSTOM:
-            # Structured long dress silhouette.
             points = [
                 (cx - shoulder_w // 2, 245),
                 (cx + shoulder_w // 2, 245),

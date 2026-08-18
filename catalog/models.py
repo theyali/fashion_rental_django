@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 from django.urls import reverse
 
 
@@ -34,10 +33,12 @@ class Color(models.Model):
 
 
 class Product(models.Model):
+    RENTAL = "rental"
     READY = "ready"
     CUSTOM = "custom"
     PRODUCT_TYPES = [
-        (READY, "Готовое изделие / аренда"),
+        (RENTAL, "Аренда"),
+        (READY, "Готовое изделие"),
         (CUSTOM, "Индивидуальный пошив"),
     ]
 
@@ -47,8 +48,9 @@ class Product(models.Model):
     name_en = models.CharField(max_length=180)
     description_ru = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
-    product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=READY)
+    product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=RENTAL)
     rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     custom_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     sizes = models.CharField(max_length=120, default="XS, S, M, L")
     colors = models.ManyToManyField(Color, related_name="products", blank=True)
