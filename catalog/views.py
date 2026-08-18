@@ -4,6 +4,7 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Case, DecimalField, F, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,9 +14,12 @@ from .forms import ContactForm, ReservationForm
 from .models import Category, Color, Product, Reservation
 
 
+SUPPORTED_LANGUAGES = {"az", "ru", "en"}
+
+
 def _lang(request):
-    lang = request.session.get("site_lang", "ru")
-    return lang if lang in {"ru", "en"} else "ru"
+    lang = request.session.get("site_lang", "az")
+    return lang if lang in SUPPORTED_LANGUAGES else "az"
 
 
 def _catalog_price_expression():
@@ -26,6 +30,10 @@ def _catalog_price_expression():
         default=None,
         output_field=DecimalField(max_digits=10, decimal_places=2),
     )
+
+
+def _product_sizes(product):
+    return [item.strip() for item in product.sizes.split(",") if item.strip()]
 
 
 def home(request):
@@ -82,13 +90,17 @@ def catalog(request):
         except (InvalidOperation, ValueError):
             price_max = ""
 
-    name_sort_field = "name_en" if _lang(request) == "en" else "name_ru"
+    name_sort_field = {
+        "az": "name_az",
+        "ru": "name_ru",
+        "en": "name_en",
+    }[_lang(request)]
     sort_options = {
         "featured": ("-is_featured", "-id"),
         "newest": ("-id",),
         "price_asc": ("catalog_price", "-is_featured"),
         "price_desc": ("-catalog_price", "-is_featured"),
-        "name": (name_sort_field,),
+        "name": (name_sort_field, "name_ru"),
     }
     if sort not in sort_options:
         sort = "featured"
@@ -121,9 +133,11 @@ def product_detail(request, slug):
         key = str(image.color_id or "default")
         frames_by_color.setdefault(key, []).append({"angle": image.angle, "url": image.image.url})
     for frames in frames_by_color.values():
-        frames.sort(key=lambda x: x["angle"])
+        frames.sort(key=lambda item: item["angle"])
+
     return render(request, "catalog/product_detail.html", {
         "product": product,
+        "product_sizes": _product_sizes(product),
         "frames_json": json.dumps(frames_by_color),
     })
 
@@ -146,33 +160,78 @@ def contacts(request):
 @require_POST
 def ajax_set_language(request):
     lang = request.POST.get("lang")
-    if lang not in {"ru", "en"}:
-        return JsonResponse({"ok": False, "error": "Unsupported language"}, status=400)
+    if lang not in SUPPORTED_LANGUAGES:
+        return JsonResponse({"ok": False, "error": "unsupported_language"}, status=400)
     request.session["site_lang"] = lang
     return JsonResponse({"ok": True, "lang": lang})
 
 
 def ajax_booked_dates(request, product_id):
-    product = get_object_or_404(Product, pk=product_id, product_type=Product.RENTAL)
+    product = get_object_or_404(
+        Product.objects.prefetch_related("colors"),
+        pk=product_id,
+        is_active=True,
+        product_type=Product.RENTAL,
+    )
     reservations = product.reservations.filter(
         status__in=[Reservation.PENDING, Reservation.CONFIRMED],
         end_date__gte=date.today(),
-    ).values("start_date", "end_date")
-    ranges = [{"start": r["start_date"].isoformat(), "end": r["end_date"].isoformat()} for r in reservations]
-    return JsonResponse({"ranges": ranges})
+    )
+
+    color_id = request.GET.get("color", "").strip()
+    if product.colors.exists():
+        if not color_id.isdigit() or not product.colors.filter(pk=int(color_id)).exists():
+            return JsonResponse({"ranges": [], "error": "invalid_color"}, status=400)
+        reservations = reservations.filter(color_id=int(color_id))
+    else:
+        reservations = reservations.filter(color__isnull=True)
+
+    ranges = [
+        {
+            "start": reservation.start_date.isoformat(),
+            "end": reservation.end_date.isoformat(),
+        }
+        for reservation in reservations.only("start_date", "end_date")
+    ]
+    return JsonResponse({
+        "ranges": ranges,
+        "today": date.today().isoformat(),
+    })
 
 
 @require_POST
 def ajax_reserve(request, product_id):
-    product = get_object_or_404(Product, pk=product_id, is_active=True, product_type=Product.RENTAL)
     form = ReservationForm(request.POST)
     if not form.is_valid():
-        return JsonResponse({"ok": False, "errors": form.errors.get_json_data()}, status=400)
-    reservation = form.save(commit=False)
-    reservation.product = product
+        return JsonResponse(
+            {"ok": False, "error": "invalid_form", "errors": form.errors.get_json_data()},
+            status=400,
+        )
+
     try:
-        reservation.full_clean()
-        reservation.save()
+        with transaction.atomic():
+            product = get_object_or_404(
+                Product.objects.select_for_update().prefetch_related("colors"),
+                pk=product_id,
+                is_active=True,
+                product_type=Product.RENTAL,
+            )
+            reservation = form.save(commit=False)
+            reservation.product = product
+            reservation.full_clean()
+            reservation.save()
     except ValidationError as exc:
-        return JsonResponse({"ok": False, "error": " ".join(exc.messages)}, status=409)
-    return JsonResponse({"ok": True, "reservation_id": reservation.id})
+        errors = getattr(exc, "message_dict", {"__all__": exc.messages})
+        return JsonResponse(
+            {"ok": False, "error": "validation_error", "errors": errors},
+            status=409,
+        )
+
+    return JsonResponse({
+        "ok": True,
+        "reservation_id": reservation.id,
+        "booking_code": reservation.short_code,
+        "status": reservation.status,
+        "start": reservation.start_date.isoformat(),
+        "end": reservation.end_date.isoformat(),
+    })

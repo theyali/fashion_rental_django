@@ -5,7 +5,11 @@
   <div class="eyebrow">THE WARDROBE / 2026</div>
   <div class="catalog-hero__row">
     <h1>{{ ui.catalog }}</h1>
-    <p>{% if site_lang == 'en' %}Rental pieces, ready-made looks and made-to-order silhouettes in one curated wardrobe.{% else %}Аренда, готовые образы и индивидуальный пошив в одной тщательно собранной коллекции.{% endif %}</p>
+    <p>
+      {% if site_lang == 'en' %}Rental pieces, ready-made looks and made-to-order silhouettes in one curated wardrobe.
+      {% elif site_lang == 'ru' %}Аренда, готовые образы и индивидуальный пошив в одной тщательно собранной коллекции.
+      {% else %}Kirayə geyimləri, hazır modellər və fərdi tikiş bir seçilmiş qarderobda.{% endif %}
+    </p>
   </div>
 </section>
 
@@ -24,7 +28,9 @@
       <select name="category">
         <option value="">{{ ui.all }}</option>
         {% for category in categories %}
-          <option value="{{ category.slug }}" {% if active_category == category.slug %}selected{% endif %}>{% if site_lang == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ru }}{% endif %}</option>
+          <option value="{{ category.slug }}" {% if active_category == category.slug %}selected{% endif %}>
+            {% if site_lang == 'en' %}{{ category.name_en }}{% elif site_lang == 'ru' %}{{ category.name_ru }}{% else %}{{ category.name_az|default:category.name_ru }}{% endif %}
+          </option>
         {% endfor %}
       </select>
     </label>
@@ -33,7 +39,9 @@
       <select name="color">
         <option value="">{{ ui.all }}</option>
         {% for color in colors %}
-          <option value="{{ color.id }}" {% if active_color == color.id|stringformat:'s' %}selected{% endif %}>{% if site_lang == 'en' %}{{ color.name_en }}{% else %}{{ color.name_ru }}{% endif %}</option>
+          <option value="{{ color.id }}" {% if active_color == color.id|stringformat:'s' %}selected{% endif %}>
+            {% if site_lang == 'en' %}{{ color.name_en }}{% elif site_lang == 'ru' %}{{ color.name_ru }}{% else %}{{ color.name_az|default:color.name_ru }}{% endif %}
+          </option>
         {% endfor %}
       </select>
     </label>

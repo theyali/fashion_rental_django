@@ -7,8 +7,16 @@
   </div>
   <div class="hero__copy">
     <div class="eyebrow">PRIVATE WARDROBE · 2026</div>
-    <h1>{% if site_lang == 'en' %}Wear the moment.<br>Make it yours.{% else %}Надень момент.<br>Сделай его своим.{% endif %}</h1>
-    <p>{% if site_lang == 'en' %}Designer rental, ready-made pieces and made-to-order looks in one catalog.{% else %}Дизайнерская аренда, готовые изделия и индивидуальный пошив в одном каталоге.{% endif %}</p>
+    <h1>
+      {% if site_lang == 'en' %}Wear the moment.<br>Make it yours.
+      {% elif site_lang == 'ru' %}Надень момент.<br>Сделай его своим.
+      {% else %}Anı geyin.<br>Onu özününkü et.{% endif %}
+    </h1>
+    <p>
+      {% if site_lang == 'en' %}Designer rental, ready-made pieces and made-to-order looks in one catalog.
+      {% elif site_lang == 'ru' %}Дизайнерская аренда, готовые изделия и индивидуальный пошив в одном каталоге.
+      {% else %}Dizayner geyimlərinin kirayəsi, hazır modellər və fərdi tikiş bir kataloqda.{% endif %}
+    </p>
     <a class="text-link" href="{% url 'catalog' %}">{{ ui.discover }} <span>→</span></a>
   </div>
 </section>
@@ -17,9 +25,17 @@
   <div class="section-kicker">01</div>
   <div>
     <div class="eyebrow">RENTAL</div>
-    <h2>{% if site_lang == 'en' %}Ready for your date{% else %}Готово к вашей дате{% endif %}</h2>
+    <h2>
+      {% if site_lang == 'en' %}Ready for your date
+      {% elif site_lang == 'ru' %}Готово к вашей дате
+      {% else %}Seçdiyiniz tarixə hazırdır{% endif %}
+    </h2>
   </div>
-  <p>{% if site_lang == 'en' %}Choose a piece, color and free dates. The reservation is created directly from the product page.{% else %}Выберите изделие, цвет и свободные даты. Бронь создается прямо из карточки товара.{% endif %}</p>
+  <p>
+    {% if site_lang == 'en' %}Choose a piece, color, size and available dates. The reservation is created directly from the product page.
+    {% elif site_lang == 'ru' %}Выберите изделие, цвет, размер и свободные даты. Бронь создается прямо из карточки товара.
+    {% else %}Geyimi, rəngi, ölçünü və boş tarixləri seçin. Bron birbaşa məhsul səhifəsindən yaradılır.{% endif %}
+  </p>
 </section>
 
 <section class="product-grid section home-product-grid">
@@ -28,7 +44,14 @@
 
 <section class="ready-edit section">
   <div class="ready-edit__head">
-    <div><div class="eyebrow">READY MADE / 02</div><h2>{% if site_lang == 'en' %}Already made. Ready to own.{% else %}Уже сшито. Готово стать вашим.{% endif %}</h2></div>
+    <div>
+      <div class="eyebrow">READY MADE / 02</div>
+      <h2>
+        {% if site_lang == 'en' %}Already made. Ready to own.
+        {% elif site_lang == 'ru' %}Уже сшито. Готово стать вашим.
+        {% else %}Artıq tikilib. Sizin olmağa hazırdır.{% endif %}
+      </h2>
+    </div>
     <a class="text-link" href="{% url 'catalog' %}?type=ready">{{ ui.ready_made }} →</a>
   </div>
   <div class="product-grid home-product-grid">
@@ -39,8 +62,16 @@
 <section class="split-banner section">
   <div class="split-banner__copy">
     <div class="eyebrow">MADE TO ORDER / 03</div>
-    <h2>{% if site_lang == 'en' %}Created around you{% else %}Создано вокруг вас{% endif %}</h2>
-    <p>{% if site_lang == 'en' %}Individual measurements, color selection and a separate request flow for custom pieces.{% else %}Индивидуальные мерки, выбор цвета и отдельный сценарий заявки на пошив.{% endif %}</p>
+    <h2>
+      {% if site_lang == 'en' %}Created around you
+      {% elif site_lang == 'ru' %}Создано вокруг вас
+      {% else %}Sizin üçün yaradılır{% endif %}
+    </h2>
+    <p>
+      {% if site_lang == 'en' %}Individual measurements, color selection and a separate request flow for custom pieces.
+      {% elif site_lang == 'ru' %}Индивидуальные мерки, выбор цвета и отдельный сценарий заявки на пошив.
+      {% else %}Fərdi ölçülər, rəng seçimi və sifarişlə tikiş üçün ayrıca müraciət prosesi.{% endif %}
+    </p>
     <a class="text-link" href="{% url 'catalog' %}?type=custom">{{ ui.made_to_order }} →</a>
   </div>
   <div class="split-banner__media">

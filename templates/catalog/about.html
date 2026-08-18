@@ -5,11 +5,23 @@
   <div class="editorial-number">ABOUT / 01</div>
   <div>
     <div class="eyebrow">ATELIER RENTAL</div>
-    <h1>{% if site_lang == 'en' %}A wardrobe for moments, not storage.{% else %}Гардероб для моментов, а не для хранения.{% endif %}</h1>
+    <h1>
+      {% if site_lang == 'en' %}A wardrobe for moments, not storage.
+      {% elif site_lang == 'ru' %}Гардероб для моментов, а не для хранения.
+      {% else %}Saxlamaq üçün deyil, anlar üçün qarderob.{% endif %}
+    </h1>
   </div>
   <div class="editorial-copy">
-    <p>{% if site_lang == 'en' %}We combine ready-made fashion rental with made-to-order service. Every item can have its own available colors, 360° frames and booking calendar.{% else %}Мы объединяем аренду готовых образов и индивидуальный пошив. Для каждого изделия доступны свои цвета, 360° кадры и календарь бронирования.{% endif %}</p>
-    <p>{% if site_lang == 'en' %}This starter is intentionally simple: the content is managed from Django Admin and the storefront stays editorial and lightweight.{% else %}Этот стартовый проект специально простой: контент управляется через Django Admin, а витрина остается легкой и редакционной.{% endif %}</p>
+    <p>
+      {% if site_lang == 'en' %}We combine ready-made fashion rental with made-to-order service. Every item can have its own available colors, 360° frames and booking calendar.
+      {% elif site_lang == 'ru' %}Мы объединяем аренду готовых образов и индивидуальный пошив. Для каждого изделия доступны свои цвета, 360° кадры и календарь бронирования.
+      {% else %}Hazır geyim kirayəsini fərdi tikiş xidməti ilə birləşdiririk. Hər məhsulun öz rəngləri, 360° görüntüləri və bron təqvimi ola bilər.{% endif %}
+    </p>
+    <p>
+      {% if site_lang == 'en' %}The catalog is managed from Django Admin, while the storefront stays editorial, fast and focused on the pieces.
+      {% elif site_lang == 'ru' %}Каталог управляется через Django Admin, а витрина остается легкой, быстрой и сфокусированной на изделиях.
+      {% else %}Kataloq Django Admin vasitəsilə idarə olunur, vitrin isə yüngül, sürətli və məhsullara fokuslanmış qalır.{% endif %}
+    </p>
   </div>
 </section>
 {% endblock %}

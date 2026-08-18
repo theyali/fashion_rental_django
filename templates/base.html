@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+  <link rel="stylesheet" href="{% static 'css/booking.css' %}">
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
@@ -24,9 +25,11 @@
       <a href="{% url 'contacts' %}" data-i18n="contacts">{{ ui.contacts }}</a>
     </nav>
     <div class="lang-switch" aria-label="Language">
-      <button class="lang-btn {% if site_lang == 'ru' %}active{% endif %}" data-lang="ru">RU</button>
+      <button class="lang-btn {% if site_lang == 'az' %}active{% endif %}" data-lang="az">AZ</button>
       <span>/</span>
       <button class="lang-btn {% if site_lang == 'en' %}active{% endif %}" data-lang="en">EN</button>
+      <span>/</span>
+      <button class="lang-btn {% if site_lang == 'ru' %}active{% endif %}" data-lang="ru">RU</button>
     </div>
   </header>
 
@@ -35,7 +38,7 @@
   <footer class="footer">
     <div>
       <div class="brand footer-brand">ATELIER <span>RENTAL</span></div>
-      <p>Rental · Ready-made · Made-to-order</p>
+      <p>{% if site_lang == 'en' %}Rental · Ready-made · Made-to-order{% elif site_lang == 'ru' %}Аренда · Готовое · На заказ{% else %}Kirayə · Hazır geyim · Sifarişlə{% endif %}</p>
     </div>
     <div class="footer-links">
       <a href="{% url 'about' %}">{{ ui.about }}</a>

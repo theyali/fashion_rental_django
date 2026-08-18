@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}{% endblock %}
+{% block title %}{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}{% endblock %}
 {% block content %}
 <section class="product-detail section-wide">
   <div class="product-viewer-wrap">
@@ -12,14 +12,33 @@
   </div>
 
   <div class="product-info">
-    <div class="product-breadcrumb"><a href="{% url 'catalog' %}">{{ ui.catalog }}</a><span>/</span><a href="{% url 'catalog' %}?category={{ product.category.slug }}">{% if site_lang == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ru }}{% endif %}</a></div>
+    <div class="product-breadcrumb">
+      <a href="{% url 'catalog' %}">{{ ui.catalog }}</a><span>/</span>
+      <a href="{% url 'catalog' %}?category={{ product.category.slug }}">
+        {% if site_lang == 'en' %}{{ product.category.name_en }}{% elif site_lang == 'ru' %}{{ product.category.name_ru }}{% else %}{{ product.category.name_az|default:product.category.name_ru }}{% endif %}
+      </a>
+    </div>
     <div class="eyebrow">{% if product.product_type == 'rental' %}RENTAL{% elif product.product_type == 'ready' %}READY MADE{% else %}MADE TO ORDER{% endif %}</div>
-    <h1 data-name-ru="{{ product.name_ru }}" data-name-en="{{ product.name_en }}">{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}</h1>
-    <p class="product-description" data-description-ru="{{ product.description_ru|escape }}" data-description-en="{{ product.description_en|escape }}">{% if site_lang == 'en' %}{{ product.description_en }}{% else %}{{ product.description_ru }}{% endif %}</p>
+    <h1
+      data-name-az="{{ product.name_az|default:product.name_ru }}"
+      data-name-ru="{{ product.name_ru }}"
+      data-name-en="{{ product.name_en }}"
+    >{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}</h1>
+
+    <p
+      class="product-description"
+      data-description-az="{{ product.description_az|default:product.description_ru|escape }}"
+      data-description-ru="{{ product.description_ru|escape }}"
+      data-description-en="{{ product.description_en|escape }}"
+    >{% if site_lang == 'en' %}{{ product.description_en }}{% elif site_lang == 'ru' %}{{ product.description_ru }}{% else %}{{ product.description_az|default:product.description_ru }}{% endif %}</p>
 
     <div class="price-big">
-      {% if product.product_type == 'rental' and product.rental_price %}{{ product.rental_price }} ₼ <small>/ {% if site_lang == 'en' %}rental{% else %}аренда{% endif %}</small>{% endif %}
-      {% if product.product_type == 'ready' and product.sale_price %}{{ product.sale_price }} ₼ <small>/ {% if site_lang == 'en' %}ready made{% else %}готовое изделие{% endif %}</small>{% endif %}
+      {% if product.product_type == 'rental' and product.rental_price %}
+        {{ product.rental_price }} ₼ <small>/ {% if site_lang == 'en' %}rental{% elif site_lang == 'ru' %}аренда{% else %}kirayə{% endif %}</small>
+      {% endif %}
+      {% if product.product_type == 'ready' and product.sale_price %}
+        {{ product.sale_price }} ₼ <small>/ {% if site_lang == 'en' %}ready made{% elif site_lang == 'ru' %}готовое изделие{% else %}hazır geyim{% endif %}</small>
+      {% endif %}
       {% if product.product_type == 'custom' and product.custom_price %}{{ ui.price_from }} {{ product.custom_price }} ₼{% endif %}
     </div>
 
@@ -27,42 +46,103 @@
       <div class="option-title">{{ ui.colors }}</div>
       <div class="swatches">
         {% for color in product.colors.all %}
-          <button class="swatch" data-color-id="{{ color.id }}" data-color-ru="{{ color.name_ru }}" data-color-en="{{ color.name_en }}" style="--swatch: {{ color.hex_code }}" aria-label="{{ color.name_en }}"></button>
+          <button
+            type="button"
+            class="swatch"
+            data-color-id="{{ color.id }}"
+            data-color-az="{{ color.name_az|default:color.name_ru }}"
+            data-color-ru="{{ color.name_ru }}"
+            data-color-en="{{ color.name_en }}"
+            style="--swatch: {{ color.hex_code }}"
+            aria-label="{{ color.name_en }}"
+          ></button>
         {% endfor %}
       </div>
       <div id="selectedColorName" class="selected-color"></div>
     </div>
 
-    <div class="product-option"><div class="option-title">{{ ui.sizes }}</div><div>{{ product.sizes }}</div></div>
+    <div class="product-option">
+      <div class="option-title">{{ ui.sizes }}</div>
+      <div class="size-list">
+        {% for size in product_sizes %}<span>{{ size }}</span>{% endfor %}
+      </div>
+    </div>
 
     {% if product.product_type == 'rental' %}
       <div class="booking-block" data-product-id="{{ product.id }}">
-        <div class="option-title">{{ ui.availability }}</div>
-        <div class="calendar-toolbar"><button id="calPrev">←</button><strong id="calTitle"></strong><button id="calNext">→</button></div>
-        <div class="calendar-grid calendar-weekdays"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+        <div class="booking-heading">
+          <div>
+            <div class="option-title">{{ ui.availability }}</div>
+            <p>{{ ui.booking_hint }}</p>
+          </div>
+          <span class="booking-step">03</span>
+        </div>
+
+        <div class="booking-choices">
+          <label class="booking-choice">
+            <span>{{ ui.color }}</span>
+            <strong id="bookingColorLabel">{{ ui.choose_color }}</strong>
+          </label>
+          <label class="booking-choice">
+            <span>{{ ui.size }}</span>
+            <select name="booking_size_preview" id="bookingSize">
+              <option value="">{{ ui.choose_size }}</option>
+              {% for size in product_sizes %}<option value="{{ size }}">{{ size }}</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+
+        <div class="calendar-toolbar">
+          <button type="button" id="calPrev" aria-label="Previous month">←</button>
+          <strong id="calTitle"></strong>
+          <button type="button" id="calNext" aria-label="Next month">→</button>
+        </div>
+
+        <div class="calendar-grid calendar-weekdays">
+          <span>{{ ui.week_mon }}</span><span>{{ ui.week_tue }}</span><span>{{ ui.week_wed }}</span>
+          <span>{{ ui.week_thu }}</span><span>{{ ui.week_fri }}</span><span>{{ ui.week_sat }}</span><span>{{ ui.week_sun }}</span>
+        </div>
         <div id="bookingCalendar" class="calendar-grid"></div>
+
+        <div class="calendar-legend">
+          <span><i class="legend-dot legend-dot--free"></i>{{ ui.calendar_free }}</span>
+          <span><i class="legend-dot legend-dot--booked"></i>{{ ui.calendar_booked }}</span>
+          <span><i class="legend-dot legend-dot--selected"></i>{{ ui.calendar_selected }}</span>
+          <span><i class="legend-dot legend-dot--past"></i>{{ ui.calendar_past }}</span>
+        </div>
 
         <form id="reservationForm" class="reservation-form">
           {% csrf_token %}
           <input type="hidden" name="start_date" id="startDate">
           <input type="hidden" name="end_date" id="endDate">
           <input type="hidden" name="color" id="selectedColorInput">
+          <input type="hidden" name="size" id="selectedSizeInput">
+
           <div class="date-summary" id="dateSummary">{{ ui.select_dates }}</div>
+
           <div class="form-grid">
-            <input name="customer_name" required placeholder="{{ ui.name }}">
-            <input name="phone" required placeholder="{{ ui.phone }}">
-            <input name="email" type="email" required placeholder="{{ ui.email }}">
+            <input name="customer_name" required autocomplete="name" placeholder="{{ ui.name }}">
+            <input name="phone" required autocomplete="tel" placeholder="{{ ui.phone }}">
+            <input name="email" type="email" required autocomplete="email" placeholder="{{ ui.email }}">
           </div>
           <textarea name="notes" rows="3" placeholder="{{ ui.message }}"></textarea>
-          <button class="btn-dark" type="submit">{{ ui.book }}</button>
-          <div id="reservationMessage" class="form-message"></div>
+          <button class="btn-dark" id="reservationSubmit" type="submit">{{ ui.book }}</button>
+          <div id="reservationMessage" class="form-message" role="status" aria-live="polite"></div>
         </form>
       </div>
     {% elif product.product_type == 'ready' %}
-      <div class="purchase-note">{% if site_lang == 'en' %}This piece is already made. Contact the atelier to confirm size, fitting and purchase details.{% else %}Это изделие уже сшито. Свяжитесь с ателье, чтобы уточнить размер, примерку и детали покупки.{% endif %}</div>
+      <div class="purchase-note">
+        {% if site_lang == 'en' %}This piece is already made. Contact the atelier to confirm size, fitting and purchase details.
+        {% elif site_lang == 'ru' %}Это изделие уже сшито. Свяжитесь с ателье, чтобы уточнить размер, примерку и детали покупки.
+        {% else %}Bu geyim artıq tikilib. Ölçü, fitting və alış detalları üçün atelye ilə əlaqə saxlayın.{% endif %}
+      </div>
       <a class="btn-dark inline-btn" href="{% url 'contacts' %}">{{ ui.buy }}</a>
     {% else %}
-      <div class="purchase-note">{% if site_lang == 'en' %}We will adapt the silhouette to your measurements, preferred fabric and color.{% else %}Мы адаптируем силуэт под ваши мерки, выбранную ткань и цвет.{% endif %}</div>
+      <div class="purchase-note">
+        {% if site_lang == 'en' %}We will adapt the silhouette to your measurements, preferred fabric and color.
+        {% elif site_lang == 'ru' %}Мы адаптируем силуэт под ваши мерки, выбранную ткань и цвет.
+        {% else %}Silueti ölçülərinizə, seçdiyiniz parçaya və rəngə uyğunlaşdıracağıq.{% endif %}
+      </div>
       <a class="btn-dark inline-btn" href="{% url 'contacts' %}">{{ ui.made_to_order }}</a>
     {% endif %}
   </div>

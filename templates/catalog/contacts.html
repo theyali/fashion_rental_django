@@ -5,7 +5,11 @@
   <div>
     <div class="eyebrow">PRIVATE APPOINTMENT</div>
     <h1>{{ ui.contacts }}</h1>
-    <p>{% if site_lang == 'en' %}Questions about rental dates, fitting or a custom order? Leave a request.{% else %}Вопросы по датам аренды, примерке или индивидуальному заказу? Оставьте заявку.{% endif %}</p>
+    <p>
+      {% if site_lang == 'en' %}Questions about rental dates, fitting or a custom order? Leave a request.
+      {% elif site_lang == 'ru' %}Вопросы по датам аренды, примерке или индивидуальному заказу? Оставьте заявку.
+      {% else %}Kirayə tarixləri, ölçü yoxlaması və ya fərdi sifarişlə bağlı sualınız var? Müraciət göndərin.{% endif %}
+    </p>
     <div class="contact-meta"><span>atelier@example.com</span><span>+994 00 000 00 00</span><span>Baku · by appointment</span></div>
   </div>
   <form method="post" class="contact-form">

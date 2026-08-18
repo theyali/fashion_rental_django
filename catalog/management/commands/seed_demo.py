@@ -20,32 +20,34 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dresses, _ = Category.objects.update_or_create(
             slug="dresses",
-            defaults={"name_ru": "Платья", "name_en": "Dresses", "sort_order": 1},
+            defaults={"name_az": "Donlar", "name_ru": "Платья", "name_en": "Dresses", "sort_order": 1},
         )
         sets, _ = Category.objects.update_or_create(
             slug="sets",
-            defaults={"name_ru": "Комплекты", "name_en": "Sets", "sort_order": 2},
+            defaults={"name_az": "Dəstlər", "name_ru": "Комплекты", "name_en": "Sets", "sort_order": 2},
         )
 
         black, _ = Color.objects.update_or_create(
             name_en="Black",
-            defaults={"name_ru": "Черный", "hex_code": "#1f1f1f"},
+            defaults={"name_az": "Qara", "name_ru": "Черный", "hex_code": "#1f1f1f"},
         )
         burgundy, _ = Color.objects.update_or_create(
             name_en="Burgundy",
-            defaults={"name_ru": "Бордовый", "hex_code": "#6f1d2e"},
+            defaults={"name_az": "Bordo", "name_ru": "Бордовый", "hex_code": "#6f1d2e"},
         )
         ivory, _ = Color.objects.update_or_create(
             name_en="Ivory",
-            defaults={"name_ru": "Айвори", "hex_code": "#e5e0d6"},
+            defaults={"name_az": "Fil sümüyü", "name_ru": "Айвори", "hex_code": "#e5e0d6"},
         )
 
         p1, _ = Product.objects.update_or_create(
             slug="aurelia-evening-dress",
             defaults={
                 "category": dresses,
+                "name_az": "Aurelia axşam donu",
                 "name_ru": "Вечернее платье Aurelia",
                 "name_en": "Aurelia Evening Dress",
+                "description_az": "Kirayə üçün zərif axşam donu. Demo kart bron təqvimi, rəng seçimi və 360° baxış imkanını göstərir.",
                 "description_ru": "Лаконичное вечернее платье для аренды. Демо-карточка показывает механику календаря, цветов и 360° обзора.",
                 "description_en": "A minimal evening rental dress. This demo product shows booking, color selection and the 360° viewer.",
                 "product_type": Product.RENTAL,
@@ -63,15 +65,17 @@ class Command(BaseCommand):
             slug="selene-custom-dress",
             defaults={
                 "category": dresses,
+                "name_az": "Sifarişlə Selene donu",
                 "name_ru": "Платье Selene на заказ",
                 "name_en": "Selene Made-to-Order Dress",
+                "description_az": "Ölçülərinizə uyğun fərdi tikiş, parça və rəng seçimi ilə.",
                 "description_ru": "Индивидуальный пошив по меркам с выбором ткани и цвета.",
                 "description_en": "Made to measure with fabric and color selection.",
                 "product_type": Product.CUSTOM,
                 "rental_price": None,
                 "sale_price": None,
                 "custom_price": 950,
-                "sizes": "По индивидуальным меркам",
+                "sizes": "Fərdi ölçü",
                 "is_featured": True,
                 "is_active": True,
             },
@@ -82,8 +86,10 @@ class Command(BaseCommand):
             slug="noir-tailored-set",
             defaults={
                 "category": sets,
+                "name_az": "Noir dəsti",
                 "name_ru": "Комплект Noir",
                 "name_en": "Noir Tailored Set",
+                "description_az": "Tədbir, şam yeməyi və ya çəkiliş üçün kirayəyə hazır dəst.",
                 "description_ru": "Готовый комплект для аренды на событие, ужин или съемку.",
                 "description_en": "A ready tailored set available for event, dinner or editorial rental.",
                 "product_type": Product.RENTAL,
@@ -101,8 +107,10 @@ class Command(BaseCommand):
             slug="ivory-sculpted-dress",
             defaults={
                 "category": dresses,
+                "name_az": "Ivory heykəltəraş formalı don",
                 "name_ru": "Скульптурное платье Ivory",
                 "name_en": "Ivory Sculpted Dress",
+                "description_az": "Cari kolleksiyadan artıq tikilmiş don. Fittingdən sonra almaq mümkündür.",
                 "description_ru": "Уже сшитое платье из текущей коллекции. Доступно для покупки после примерки.",
                 "description_en": "A finished piece from the current collection, available to purchase after fitting.",
                 "product_type": Product.READY,

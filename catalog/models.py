@@ -1,9 +1,13 @@
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 
 class Category(models.Model):
+    name_az = models.CharField(max_length=120, blank=True)
     name_ru = models.CharField(max_length=120)
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
@@ -15,10 +19,11 @@ class Category(models.Model):
         verbose_name_plural = "Категории"
 
     def __str__(self):
-        return self.name_ru
+        return self.name_az or self.name_ru
 
 
 class Color(models.Model):
+    name_az = models.CharField(max_length=80, blank=True)
     name_ru = models.CharField(max_length=80)
     name_en = models.CharField(max_length=80)
     hex_code = models.CharField(max_length=7, default="#111111")
@@ -29,7 +34,7 @@ class Color(models.Model):
         verbose_name_plural = "Цвета"
 
     def __str__(self):
-        return self.name_ru
+        return self.name_az or self.name_ru
 
 
 class Product(models.Model):
@@ -44,8 +49,10 @@ class Product(models.Model):
 
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     slug = models.SlugField(unique=True)
+    name_az = models.CharField(max_length=180, blank=True)
     name_ru = models.CharField(max_length=180)
     name_en = models.CharField(max_length=180)
+    description_az = models.TextField(blank=True)
     description_ru = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
     product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=RENTAL)
@@ -65,7 +72,7 @@ class Product(models.Model):
         verbose_name_plural = "Изделия"
 
     def __str__(self):
-        return self.name_ru
+        return self.name_az or self.name_ru
 
     def get_absolute_url(self):
         return reverse("product_detail", kwargs={"slug": self.slug})
@@ -97,8 +104,10 @@ class Reservation(models.Model):
         (CANCELLED, "Отменено"),
     ]
 
+    booking_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reservations")
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True)
+    size = models.CharField(max_length=30, blank=True)
     customer_name = models.CharField(max_length=120)
     email = models.EmailField()
     phone = models.CharField(max_length=50)
@@ -113,23 +122,57 @@ class Reservation(models.Model):
         verbose_name = "Бронирование"
         verbose_name_plural = "Бронирования"
 
+    @property
+    def short_code(self):
+        return str(self.booking_id).split("-")[0].upper()
+
     def clean(self):
+        errors = {}
+        today = timezone.localdate()
+
+        if self.start_date and self.start_date < today:
+            errors["start_date"] = "Keçmiş tarix üçün bron yaratmaq olmaz."
         if self.start_date and self.end_date and self.end_date < self.start_date:
-            raise ValidationError("Дата окончания не может быть раньше даты начала.")
-        if self.product_id and self.start_date and self.end_date:
+            errors["end_date"] = "Bitmə tarixi başlanğıc tarixindən əvvəl ola bilməz."
+
+        if self.product_id:
+            if self.product.product_type != Product.RENTAL:
+                errors["product"] = "Yalnız kirayə məhsullarını bron etmək olar."
+
+            available_sizes = [item.strip() for item in self.product.sizes.split(",") if item.strip()]
+            if available_sizes:
+                if not self.size:
+                    errors["size"] = "Ölçü seçin."
+                elif self.size not in available_sizes:
+                    errors["size"] = "Seçilmiş ölçü bu məhsul üçün mövcud deyil."
+
+            has_colors = self.product.colors.exists()
+            if has_colors and not self.color_id:
+                errors["color"] = "Rəng seçin."
+            elif self.color_id and not self.product.colors.filter(pk=self.color_id).exists():
+                errors["color"] = "Seçilmiş rəng bu məhsula aid deyil."
+
+        if not errors and self.product_id and self.start_date and self.end_date:
             overlap = Reservation.objects.filter(
                 product_id=self.product_id,
                 status__in=[self.PENDING, self.CONFIRMED],
                 start_date__lte=self.end_date,
                 end_date__gte=self.start_date,
             )
+            if self.color_id:
+                overlap = overlap.filter(color_id=self.color_id)
+            else:
+                overlap = overlap.filter(color__isnull=True)
             if self.pk:
                 overlap = overlap.exclude(pk=self.pk)
             if overlap.exists():
-                raise ValidationError("Эти даты уже заняты.")
+                errors["start_date"] = "Seçilmiş tarixlər artıq bron edilib."
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
-        return f"{self.product} / {self.start_date}–{self.end_date}"
+        return f"{self.short_code} · {self.product} / {self.start_date}–{self.end_date}"
 
 
 class ContactMessage(models.Model):
