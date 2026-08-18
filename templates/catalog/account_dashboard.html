@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ seo_title }}{% endblock %}
+{% block content %}
+<section class="section account-dashboard">
+  <div class="account-dashboard__head">
+    <div>
+      <div class="eyebrow">JALUZINO COUTURE / ACCOUNT</div>
+      <h1>{% if site_lang == 'en' %}My account{% elif site_lang == 'ru' %}Мой аккаунт{% else %}Hesabım{% endif %}</h1>
+      <p>{% if site_lang == 'en' %}Manage your saved pieces and account details.{% elif site_lang == 'ru' %}Здесь находятся данные аккаунта и сохранённые изделия.{% else %}Hesab məlumatlarınızı və seçilmiş geyimləri buradan idarə edin.{% endif %}</p>
+    </div>
+  </div>
+  <div class="account-dashboard__grid">
+    <div class="account-dashboard__panel">
+      <div class="account-dashboard__label">{% if site_lang == 'en' %}Profile{% elif site_lang == 'ru' %}Профиль{% else %}Profil{% endif %}</div>
+      <h2 class="account-dashboard__name">{{ user.get_full_name|default:user.email }}</h2>
+      <div class="account-dashboard__email">{{ user.email }}</div>
+    </div>
+    <div class="account-dashboard__panel">
+      <div class="account-dashboard__label">{% if site_lang == 'en' %}Quick access{% elif site_lang == 'ru' %}Быстрый доступ{% else %}Sürətli keçid{% endif %}</div>
+      <div class="account-dashboard__actions">
+        <a class="account-dashboard__link" href="{% url 'wishlist' %}">
+          <span>{% if site_lang == 'en' %}Wishlist{% elif site_lang == 'ru' %}Избранное{% else %}Seçilmişlər{% endif %}</span>
+          <span class="account-dashboard__count">{{ favorite_count }}</span>
+        </a>
+        <a class="account-dashboard__link" href="{% url 'catalog' %}"><span>{{ ui.catalog }}</span><span>→</span></a>
+        <form class="account-dashboard__logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="account-dashboard__logout" type="submit"><span>{% if site_lang == 'en' %}Sign out{% elif site_lang == 'ru' %}Выйти{% else %}Çıxış{% endif %}</span><span>→</span></button></form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

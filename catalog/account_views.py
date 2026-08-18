@@ -33,11 +33,13 @@ def _safe_next(request, value, fallback):
 
 def login_register(request):
     lang = _lang(request)
-    fallback = reverse("wishlist")
+    fallback = reverse("account")
     next_value = request.POST.get("next") or request.GET.get("next") or fallback
     next_url = _safe_next(request, next_value, fallback)
+
     if request.user.is_authenticated and request.method == "GET":
-        return redirect(next_url)
+        return redirect("account")
+
     login_form = EmailLoginForm(request=request)
     register_form = RegisterForm()
     if request.method == "POST":
@@ -55,9 +57,52 @@ def login_register(request):
                 login(request, user)
                 messages.success(request, AUTH_COPY[lang]["register_ok"])
                 return redirect(next_url)
-    titles = {"az": "Giriş və qeydiyyat — JALUZINO COUTURE", "ru": "Вход и регистрация — JALUZINO COUTURE", "en": "Login & registration — JALUZINO COUTURE"}
-    descriptions = {"az": "JALUZINO COUTURE hesabınıza daxil olun və ya yeni hesab yaradın.", "ru": "Войдите в JALUZINO COUTURE или создайте новый аккаунт.", "en": "Sign in to JALUZINO COUTURE or create a new account."}
-    return render(request, "catalog/account.html", {"login_form": login_form, "register_form": register_form, "next_url": next_url, "seo_title": titles[lang], "seo_description": descriptions[lang]})
+
+    titles = {
+        "az": "Giriş və qeydiyyat — JALUZINO COUTURE",
+        "ru": "Вход и регистрация — JALUZINO COUTURE",
+        "en": "Login & registration — JALUZINO COUTURE",
+    }
+    descriptions = {
+        "az": "JALUZINO COUTURE hesabınıza daxil olun və ya yeni hesab yaradın.",
+        "ru": "Войдите в JALUZINO COUTURE или создайте новый аккаунт.",
+        "en": "Sign in to JALUZINO COUTURE or create a new account.",
+    }
+    return render(
+        request,
+        "catalog/account.html",
+        {
+            "login_form": login_form,
+            "register_form": register_form,
+            "next_url": next_url,
+            "seo_title": titles[lang],
+            "seo_description": descriptions[lang],
+        },
+    )
+
+
+@login_required(login_url="login")
+def account_dashboard(request):
+    lang = _lang(request)
+    titles = {
+        "az": "Hesabım — JALUZINO COUTURE",
+        "ru": "Мой аккаунт — JALUZINO COUTURE",
+        "en": "My account — JALUZINO COUTURE",
+    }
+    descriptions = {
+        "az": "JALUZINO COUTURE şəxsi hesabı.",
+        "ru": "Личный аккаунт JALUZINO COUTURE.",
+        "en": "Your JALUZINO COUTURE account.",
+    }
+    return render(
+        request,
+        "catalog/account_dashboard.html",
+        {
+            "favorite_count": request.user.favorites.count(),
+            "seo_title": titles[lang],
+            "seo_description": descriptions[lang],
+        },
+    )
 
 
 @require_POST
@@ -70,10 +115,24 @@ def logout_view(request):
 
 @login_required(login_url="login")
 def wishlist(request):
-    products = Product.objects.filter(is_active=True, favorites__user=request.user).select_related("category").prefetch_related("colors", "images").order_by("-favorites__created_at").distinct()
+    products = (
+        Product.objects.filter(is_active=True, favorites__user=request.user)
+        .select_related("category")
+        .prefetch_related("colors", "images")
+        .order_by("-favorites__created_at")
+        .distinct()
+    )
     lang = _lang(request)
-    titles = {"az": "Seçilmişlər — JALUZINO COUTURE", "ru": "Избранное — JALUZINO COUTURE", "en": "Wishlist — JALUZINO COUTURE"}
-    return render(request, "catalog/wishlist.html", {"products": products, "seo_title": titles[lang], "seo_description": titles[lang]})
+    titles = {
+        "az": "Seçilmişlər — JALUZINO COUTURE",
+        "ru": "Избранное — JALUZINO COUTURE",
+        "en": "Wishlist — JALUZINO COUTURE",
+    }
+    return render(
+        request,
+        "catalog/wishlist.html",
+        {"products": products, "seo_title": titles[lang], "seo_description": titles[lang]},
+    )
 
 
 @require_POST
@@ -83,6 +142,7 @@ def toggle_favorite(request, product_id):
     if not request.user.is_authenticated:
         login_url = f"{reverse('login')}?{urlencode({'next': next_url})}"
         return JsonResponse({"ok": False, "auth_required": True, "login_url": login_url}, status=401)
+
     product = get_object_or_404(Product, pk=product_id, is_active=True)
     favorite, created = Favorite.objects.get_or_create(user=request.user, product=product)
     if created:
@@ -90,4 +150,7 @@ def toggle_favorite(request, product_id):
     else:
         favorite.delete()
         is_favorite = False
-    return JsonResponse({"ok": True, "is_favorite": is_favorite, "count": request.user.favorites.count()})
+
+    return JsonResponse(
+        {"ok": True, "is_favorite": is_favorite, "count": request.user.favorites.count()}
+    )

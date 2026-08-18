@@ -1,1 +1,29 @@
-<article class="product-card"><div class="product-card__image-wrap"><a class="product-card__image" href="{{ product.get_absolute_url }}">{% if product.cover_image %}<img class="product-card__primary" src="{{ product.cover_image.url }}" loading="lazy" decoding="async" alt="{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}">{% endif %}{% with gallery=product.images.all %}{% if gallery.1 %}<img class="product-card__secondary" src="{{ gallery.1.image.url }}" loading="lazy" decoding="async" alt="">{% endif %}{% endwith %}<span class="product-card__badge">{% if product.product_type == 'rental' %}{{ ui.rental }}{% elif product.product_type == 'ready' %}{{ ui.ready }}{% else %}{{ ui.custom }}{% endif %}</span><span class="product-card__view">{% if site_lang == 'en' %}View piece{% elif site_lang == 'ru' %}Смотреть{% else %}Bax{% endif %} →</span></a><button type="button" class="favorite-toggle favorite-toggle--card {% if product.id in favorite_product_ids %}is-active{% endif %}" data-product-id="{{ product.id }}" aria-pressed="{% if product.id in favorite_product_ids %}true{% else %}false{% endif %}" aria-label="Wishlist"><svg viewBox="0 0 24 24"><path d="M12 20.4 3.7 12.5A5.3 5.3 0 0 1 11.2 5l.8.8.8-.8a5.3 5.3 0 0 1 7.5 7.5Z"/></svg></button></div><div class="product-card__meta"><div class="product-card__identity"><div class="product-card__category">{% if site_lang == 'en' %}{{ product.category.name_en }}{% elif site_lang == 'ru' %}{{ product.category.name_ru }}{% else %}{{ product.category.name_az|default:product.category.name_ru }}{% endif %}</div><a href="{{ product.get_absolute_url }}"><h3 data-name-az="{{ product.name_az|default:product.name_ru }}" data-name-ru="{{ product.name_ru }}" data-name-en="{{ product.name_en }}">{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}</h3></a><div class="mini-swatches">{% for color in product.colors.all|slice:':4' %}<i style="--mini-swatch:{{ color.hex_code }}"></i>{% endfor %}</div></div><div class="product-card__price">{% if product.product_type == 'rental' and product.rental_price %}{{ product.rental_price }} ₼ <small>/ {% if site_lang == 'en' %}day{% elif site_lang == 'ru' %}день{% else %}gün{% endif %}</small>{% endif %}{% if product.product_type == 'ready' and product.sale_price %}{{ product.sale_price }} ₼{% endif %}{% if product.product_type == 'custom' and product.custom_price %}{{ ui.price_from }} {{ product.custom_price }} ₼{% endif %}</div></div></article>
+{% with gallery=product.images.all %}
+<article class="product-card{% if gallery.1 %} has-secondary{% endif %}">
+  <div class="product-card__image-wrap">
+    <a class="product-card__image" href="{{ product.get_absolute_url }}">
+      {% if product.cover_image %}
+        <img class="product-card__primary" src="{{ product.cover_image.url }}" loading="lazy" decoding="async" alt="{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}">
+      {% endif %}
+      {% if gallery.1 %}
+        <img class="product-card__secondary" src="{{ gallery.1.image.url }}" decoding="async" alt="" aria-hidden="true">
+      {% endif %}
+      <span class="product-card__badge">{% if product.product_type == 'rental' %}{{ ui.rental }}{% elif product.product_type == 'ready' %}{{ ui.ready }}{% else %}{{ ui.custom }}{% endif %}</span>
+      <span class="product-card__view">{% if site_lang == 'en' %}View piece{% elif site_lang == 'ru' %}Смотреть{% else %}Bax{% endif %} →</span>
+    </a>
+    <button type="button" class="favorite-toggle favorite-toggle--card {% if product.id in favorite_product_ids %}is-active{% endif %}" data-product-id="{{ product.id }}" aria-pressed="{% if product.id in favorite_product_ids %}true{% else %}false{% endif %}" aria-label="Wishlist"><svg viewBox="0 0 24 24"><path d="M12 20.4 3.7 12.5A5.3 5.3 0 0 1 11.2 5l.8.8.8-.8a5.3 5.3 0 0 1 7.5 7.5Z"/></svg></button>
+  </div>
+  <div class="product-card__meta">
+    <div class="product-card__identity">
+      <div class="product-card__category">{% if site_lang == 'en' %}{{ product.category.name_en }}{% elif site_lang == 'ru' %}{{ product.category.name_ru }}{% else %}{{ product.category.name_az|default:product.category.name_ru }}{% endif %}</div>
+      <a href="{{ product.get_absolute_url }}"><h3 data-name-az="{{ product.name_az|default:product.name_ru }}" data-name-ru="{{ product.name_ru }}" data-name-en="{{ product.name_en }}">{% if site_lang == 'en' %}{{ product.name_en }}{% elif site_lang == 'ru' %}{{ product.name_ru }}{% else %}{{ product.name_az|default:product.name_ru }}{% endif %}</h3></a>
+      <div class="mini-swatches">{% for color in product.colors.all|slice:':4' %}<i style="--mini-swatch:{{ color.hex_code }}"></i>{% endfor %}</div>
+    </div>
+    <div class="product-card__price">
+      {% if product.product_type == 'rental' and product.rental_price %}{{ product.rental_price }} ₼ <small>/ {% if site_lang == 'en' %}day{% elif site_lang == 'ru' %}день{% else %}gün{% endif %}</small>{% endif %}
+      {% if product.product_type == 'ready' and product.sale_price %}{{ product.sale_price }} ₼{% endif %}
+      {% if product.product_type == 'custom' and product.custom_price %}{{ ui.price_from }} {{ product.custom_price }} ₼{% endif %}
+    </div>
+  </div>
+</article>
+{% endwith %}
