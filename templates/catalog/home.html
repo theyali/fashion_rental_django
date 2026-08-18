@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Atelier Rental{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero__media">
+    {% if featured.0.cover_image %}<img src="{{ featured.0.cover_image.url }}" alt="Fashion collection">{% endif %}
+  </div>
+  <div class="hero__copy">
+    <div class="eyebrow">PRIVATE WARDROBE · 2026</div>
+    <h1>{% if site_lang == 'en' %}Wear the moment.<br>Return the dress.{% else %}Надень момент.<br>Верни платье.{% endif %}</h1>
+    <p>{% if site_lang == 'en' %}Designer rental, ready-made pieces and made-to-order looks in one catalog.{% else %}Дизайнерская аренда, готовые изделия и индивидуальный пошив в одном каталоге.{% endif %}</p>
+    <a class="text-link" href="{% url 'catalog' %}">{{ ui.discover }} <span>→</span></a>
+  </div>
+</section>
+
+<section class="section intro-grid">
+  <div class="section-kicker">01</div>
+  <div>
+    <div class="eyebrow">RENTAL</div>
+    <h2>{% if site_lang == 'en' %}Ready for your date{% else %}Готово к вашей дате{% endif %}</h2>
+  </div>
+  <p>{% if site_lang == 'en' %}Choose a piece, color and free dates. The reservation is created directly from the product page.{% else %}Выберите изделие, цвет и свободные даты. Бронь создается прямо из карточки товара.{% endif %}</p>
+</section>
+
+<section class="product-grid section">
+  {% for product in ready %}{% include 'partials/product_card.html' with product=product %}{% empty %}<p>No products</p>{% endfor %}
+</section>
+
+<section class="split-banner section">
+  <div class="split-banner__copy">
+    <div class="eyebrow">MADE TO ORDER</div>
+    <h2>{% if site_lang == 'en' %}Created around you{% else %}Создано вокруг вас{% endif %}</h2>
+    <p>{% if site_lang == 'en' %}Individual measurements, color selection and a separate request flow for custom pieces.{% else %}Индивидуальные мерки, выбор цвета и отдельный сценарий заявки на пошив.{% endif %}</p>
+    <a class="text-link" href="{% url 'catalog' %}?type=custom">{{ ui.made_to_order }} →</a>
+  </div>
+  <div class="split-banner__media">
+    {% if custom.0.cover_image %}<img src="{{ custom.0.cover_image.url }}" alt="Made to order">{% endif %}
+  </div>
+</section>
+{% endblock %}

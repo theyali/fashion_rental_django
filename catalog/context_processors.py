@@ -1,0 +1,61 @@
+UI = {
+    "ru": {
+        "home": "Главная",
+        "catalog": "Каталог",
+        "about": "О нас",
+        "contacts": "Контакты",
+        "rent": "Арендовать",
+        "made_to_order": "На заказ",
+        "ready_made": "Готовые изделия",
+        "discover": "Смотреть коллекцию",
+        "book": "Забронировать",
+        "price_from": "от",
+        "colors": "Цвета",
+        "sizes": "Размеры",
+        "availability": "Календарь бронирования",
+        "select_dates": "Выберите даты",
+        "name": "Имя",
+        "phone": "Телефон",
+        "email": "Email",
+        "message": "Сообщение",
+        "send": "Отправить",
+        "all": "Все",
+        "filter": "Фильтр",
+        "ready": "В наличии",
+        "custom": "Индивидуальный пошив",
+        "viewer360": "360° обзор",
+    },
+    "en": {
+        "home": "Home",
+        "catalog": "Catalog",
+        "about": "About",
+        "contacts": "Contacts",
+        "rent": "Rent",
+        "made_to_order": "Made to order",
+        "ready_made": "Ready made",
+        "discover": "Discover collection",
+        "book": "Book now",
+        "price_from": "from",
+        "colors": "Colors",
+        "sizes": "Sizes",
+        "availability": "Booking calendar",
+        "select_dates": "Select dates",
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "message": "Message",
+        "send": "Send",
+        "all": "All",
+        "filter": "Filter",
+        "ready": "Available",
+        "custom": "Made to order",
+        "viewer360": "360° view",
+    },
+}
+
+
+def site_context(request):
+    lang = request.session.get("site_lang", "ru")
+    if lang not in UI:
+        lang = "ru"
+    return {"site_lang": lang, "ui": UI[lang]}

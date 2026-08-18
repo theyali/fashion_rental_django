@@ -1,0 +1,15 @@
+<article class="product-card">
+  <a class="product-card__image" href="{{ product.get_absolute_url }}">
+    {% if product.cover_image %}<img src="{{ product.cover_image.url }}" alt="{{ product.name_ru }}">{% endif %}
+    <span class="product-card__badge">{% if product.product_type == 'ready' %}{{ ui.ready }}{% else %}{{ ui.custom }}{% endif %}</span>
+  </a>
+  <div class="product-card__meta">
+    <a href="{{ product.get_absolute_url }}">
+      <h3 data-name-ru="{{ product.name_ru }}" data-name-en="{{ product.name_en }}">{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}</h3>
+    </a>
+    <div class="product-card__price">
+      {% if product.product_type == 'ready' and product.rental_price %}{{ ui.price_from }} {{ product.rental_price }} ₼{% endif %}
+      {% if product.product_type == 'custom' and product.custom_price %}{{ ui.price_from }} {{ product.custom_price }} ₼{% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,64 @@
+{% load static %}
+{% extends 'base.html' %}
+{% block title %}{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}{% endblock %}
+{% block content %}
+<section class="product-detail section-wide">
+  <div class="product-viewer-wrap">
+    <div class="product-viewer" id="viewer360" data-frames='{{ frames_json|safe }}'>
+      {% if product.cover_image %}<img id="viewerImage" src="{{ product.cover_image.url }}" alt="{{ product.name_ru }}">{% endif %}
+      <div class="viewer-hint"><span>↔</span> <span data-i18n="viewer360">{{ ui.viewer360 }}</span></div>
+    </div>
+    <div class="viewer-progress"><span id="viewerAngle">0°</span><div><i id="viewerProgress"></i></div></div>
+  </div>
+
+  <div class="product-info">
+    <div class="eyebrow">{% if product.product_type == 'ready' %}RENTAL / READY MADE{% else %}MADE TO ORDER{% endif %}</div>
+    <h1 data-name-ru="{{ product.name_ru }}" data-name-en="{{ product.name_en }}">{% if site_lang == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ru }}{% endif %}</h1>
+    <p class="product-description" data-description-ru="{{ product.description_ru|escape }}" data-description-en="{{ product.description_en|escape }}">{% if site_lang == 'en' %}{{ product.description_en }}{% else %}{{ product.description_ru }}{% endif %}</p>
+
+    <div class="price-big">
+      {% if product.product_type == 'ready' %}{{ product.rental_price }} ₼ <small>/ rental</small>{% else %}{{ ui.price_from }} {{ product.custom_price }} ₼{% endif %}
+    </div>
+
+    <div class="product-option">
+      <div class="option-title">{{ ui.colors }}</div>
+      <div class="swatches">
+        {% for color in product.colors.all %}
+          <button class="swatch" data-color-id="{{ color.id }}" data-color-ru="{{ color.name_ru }}" data-color-en="{{ color.name_en }}" style="--swatch: {{ color.hex_code }}" aria-label="{{ color.name_en }}"></button>
+        {% endfor %}
+      </div>
+      <div id="selectedColorName" class="selected-color"></div>
+    </div>
+
+    <div class="product-option"><div class="option-title">{{ ui.sizes }}</div><div>{{ product.sizes }}</div></div>
+
+    {% if product.product_type == 'ready' %}
+      <div class="booking-block" data-product-id="{{ product.id }}">
+        <div class="option-title">{{ ui.availability }}</div>
+        <div class="calendar-toolbar"><button id="calPrev">←</button><strong id="calTitle"></strong><button id="calNext">→</button></div>
+        <div class="calendar-grid calendar-weekdays"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+        <div id="bookingCalendar" class="calendar-grid"></div>
+
+        <form id="reservationForm" class="reservation-form">
+          {% csrf_token %}
+          <input type="hidden" name="start_date" id="startDate">
+          <input type="hidden" name="end_date" id="endDate">
+          <input type="hidden" name="color" id="selectedColorInput">
+          <div class="date-summary" id="dateSummary">{{ ui.select_dates }}</div>
+          <div class="form-grid">
+            <input name="customer_name" required placeholder="{{ ui.name }}">
+            <input name="phone" required placeholder="{{ ui.phone }}">
+            <input name="email" type="email" required placeholder="{{ ui.email }}">
+          </div>
+          <textarea name="notes" rows="3" placeholder="{{ ui.message }}"></textarea>
+          <button class="btn-dark" type="submit">{{ ui.book }}</button>
+          <div id="reservationMessage" class="form-message"></div>
+        </form>
+      </div>
+    {% else %}
+      <a class="btn-dark inline-btn" href="{% url 'contacts' %}">{{ ui.made_to_order }}</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/product.js' %}"></script>{% endblock %}

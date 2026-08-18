@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="{{ site_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Atelier Rental{% endblock %}</title>
+  <meta name="description" content="Fashion rental and made-to-order catalog">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}">ATELIER <span>RENTAL</span></a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="main-nav">
+      <a href="{% url 'home' %}" data-i18n="home">{{ ui.home }}</a>
+      <a href="{% url 'catalog' %}" data-i18n="catalog">{{ ui.catalog }}</a>
+      <a href="{% url 'about' %}" data-i18n="about">{{ ui.about }}</a>
+      <a href="{% url 'contacts' %}" data-i18n="contacts">{{ ui.contacts }}</a>
+    </nav>
+    <div class="lang-switch" aria-label="Language">
+      <button class="lang-btn {% if site_lang == 'ru' %}active{% endif %}" data-lang="ru">RU</button>
+      <span>/</span>
+      <button class="lang-btn {% if site_lang == 'en' %}active{% endif %}" data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="footer">
+    <div>
+      <div class="brand footer-brand">ATELIER <span>RENTAL</span></div>
+      <p>Rental · Ready-made · Made-to-order</p>
+    </div>
+    <div class="footer-links">
+      <a href="{% url 'about' %}">{{ ui.about }}</a>
+      <a href="{% url 'contacts' %}">{{ ui.contacts }}</a>
+      <a href="/admin/">Admin</a>
+    </div>
+  </footer>
+
+  <script>window.CSRF_TOKEN = '{{ csrf_token }}';</script>
+  <script src="{% static 'js/site.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

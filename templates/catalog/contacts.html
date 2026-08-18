@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ ui.contacts }} · Atelier Rental{% endblock %}
+{% block content %}
+<section class="contact-page section-wide">
+  <div>
+    <div class="eyebrow">PRIVATE APPOINTMENT</div>
+    <h1>{{ ui.contacts }}</h1>
+    <p>{% if site_lang == 'en' %}Questions about rental dates, fitting or a custom order? Leave a request.{% else %}Вопросы по датам аренды, примерке или индивидуальному заказу? Оставьте заявку.{% endif %}</p>
+    <div class="contact-meta"><span>atelier@example.com</span><span>+994 00 000 00 00</span><span>Baku · by appointment</span></div>
+  </div>
+  <form method="post" class="contact-form">
+    {% csrf_token %}
+    <input name="name" required placeholder="{{ ui.name }}">
+    <input name="email" type="email" required placeholder="{{ ui.email }}">
+    <input name="phone" placeholder="{{ ui.phone }}">
+    <textarea name="message" rows="7" required placeholder="{{ ui.message }}"></textarea>
+    <button class="btn-dark" type="submit">{{ ui.send }}</button>
+  </form>
+</section>
+{% endblock %}

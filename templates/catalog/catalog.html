@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ ui.catalog }} · Atelier Rental{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="eyebrow">THE WARDROBE</div>
+  <h1>{{ ui.catalog }}</h1>
+</section>
+
+<section class="catalog-toolbar section">
+  <div class="filter-group">
+    <a class="filter-pill {% if not active_type %}active{% endif %}" href="{% url 'catalog' %}">{{ ui.all }}</a>
+    <a class="filter-pill {% if active_type == 'ready' %}active{% endif %}" href="?type=ready">{{ ui.ready_made }}</a>
+    <a class="filter-pill {% if active_type == 'custom' %}active{% endif %}" href="?type=custom">{{ ui.made_to_order }}</a>
+  </div>
+  <div class="filter-group categories">
+    {% for category in categories %}
+      <a class="filter-pill {% if active_category == category.slug %}active{% endif %}" href="?category={{ category.slug }}{% if active_type %}&type={{ active_type }}{% endif %}">{% if site_lang == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ru }}{% endif %}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="product-grid section catalog-grid">
+  {% for product in products %}{% include 'partials/product_card.html' with product=product %}{% empty %}<p>No products</p>{% endfor %}
+</section>
+{% endblock %}
