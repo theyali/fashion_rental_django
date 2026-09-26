@@ -1,13 +1,13 @@
 (function ($) {
-  const viewer = $('#viewer360');
+  const viewer = $('#productViewer');
   const booking = $('.booking-block');
   const lang = ['az', 'en', 'ru'].includes($('html').attr('lang')) ? $('html').attr('lang') : 'az';
   const locale = {az: 'az-AZ', en: 'en-US', ru: 'ru-RU'}[lang];
 
   const text = {
-    az: {selectDates:'Tarixləri seçin',chooseColor:'Əvvəl rəng seçin.',chooseSize:'Əvvəl ölçü seçin.',choosePeriod:'Əvvəl tarix aralığını seçin.',unavailable:'Seçilmiş tarix aralığında artıq bron olunmuş gün var.',invalid:'Bron yaratmaq mümkün olmadı. Məlumatları yoxlayın.',sent:'Sorğunuz qəbul edildi. Təsdiqdən sonra bron qüvvəyə minəcək.',code:'Bron kodu',days:'gün',day:'gün',total:'Ümumi',loading:'Mövcud tarixlər yoxlanılır…'},
-    en: {selectDates:'Select dates',chooseColor:'Choose a color first.',chooseSize:'Choose a size first.',choosePeriod:'Select a date range first.',unavailable:'The selected range contains unavailable dates.',invalid:'Could not create the booking. Check the details.',sent:'Request received. The booking becomes active after confirmation.',code:'Booking code',days:'days',day:'day',total:'Total',loading:'Checking availability…'},
-    ru: {selectDates:'Выберите даты',chooseColor:'Сначала выберите цвет.',chooseSize:'Сначала выберите размер.',choosePeriod:'Сначала выберите период.',unavailable:'В выбранном периоде уже есть занятые даты.',invalid:'Не удалось создать бронь. Проверьте данные.',sent:'Заявка принята. Бронь вступит в силу после подтверждения.',code:'Код брони',days:'дн.',day:'день',total:'Итого',loading:'Проверяем свободные даты…'}
+    az: {selectDates:'Tarixləri seçin',chooseColor:'Əvvəl rəng seçin.',chooseSize:'Əvvəl ölçü seçin.',choosePeriod:'Əvvəl tarix aralığını seçin.',unavailable:'Seçilmiş tarix aralığında artıq bron olunmuş gün var.',invalid:'Bron yaratmaq mümkün olmadı. Məlumatları yoxlayın.',sent:'Sorğunuz qəbul edildi. Təsdiqdən sonra bron qüvvəyə minəcək.',code:'Bron kodu',days:'gün',day:'gün',total:'Ümumi',loading:'Mövcud tarixlər yoxlanılır…',minDays:'Minimum kirayə müddəti {days} gündür.'},
+    en: {selectDates:'Select dates',chooseColor:'Choose a color first.',chooseSize:'Choose a size first.',choosePeriod:'Select a date range first.',unavailable:'The selected range contains unavailable dates.',invalid:'Could not create the booking. Check the details.',sent:'Request received. The booking becomes active after confirmation.',code:'Booking code',days:'days',day:'day',total:'Total',loading:'Checking availability…',minDays:'Minimum rental is {days} days.'},
+    ru: {selectDates:'Выберите даты',chooseColor:'Сначала выберите цвет.',chooseSize:'Сначала выберите размер.',choosePeriod:'Сначала выберите период.',unavailable:'В выбранном периоде уже есть занятые даты.',invalid:'Не удалось создать бронь. Проверьте данные.',sent:'Заявка принята. Бронь вступит в силу после подтверждения.',code:'Код брони',days:'дн.',day:'день',total:'Итого',loading:'Проверяем свободные даты…',minDays:'Минимальная аренда — {days} дня.'}
   }[lang];
 
   let mediaByColor = {};
@@ -17,24 +17,22 @@
   }
 
   const coverUrl = viewer.data('cover-url') || '';
-  let activeMedia = {photos: [], frames: []};
+  let activeMedia = {photos: [], videos: []};
   let mediaMode = 'photos';
   let photoIndex = 0;
-  let frameIndex = 0;
-  let dragStartX = null;
-  let dragPointerId = null;
 
-  function firstMediaBucket() { return Object.values(mediaByColor).find(bucket => (bucket.photos || []).length || (bucket.frames || []).length) || {photos: [], frames: []}; }
+  function firstMediaBucket() { return Object.values(mediaByColor).find(bucket => (bucket.photos || []).length || (bucket.videos || []).length) || {photos: [], videos: []}; }
   function bucketForColor(colorId) { return mediaByColor[String(colorId)] || mediaByColor.default || firstMediaBucket(); }
   function setMediaForColor(colorId) {
     const bucket = bucketForColor(colorId);
-    activeMedia = {photos: Array.isArray(bucket.photos) ? bucket.photos : [], frames: Array.isArray(bucket.frames) ? bucket.frames : []};
-    photoIndex = 0; frameIndex = 0; renderMedia();
+    activeMedia = {photos: Array.isArray(bucket.photos) ? bucket.photos : [], videos: Array.isArray(bucket.videos) ? bucket.videos : []};
+    photoIndex = 0; renderMedia();
   }
-  function setMediaMode(mode) { mediaMode = mode === 'spin' ? 'spin' : 'photos'; renderMedia(); }
+  function setMediaMode(mode) { mediaMode = mode === 'videos' ? 'videos' : 'photos'; renderMedia(); }
   function setViewerImage(url) {
     const image = $('#viewerImage');
     if (url) image.attr('src', url).prop('hidden', false); else image.removeAttr('src').prop('hidden', true);
+    $('#viewerVideo').prop('hidden', true).removeAttr('src poster').get(0)?.pause();
   }
   function renderThumbs() {
     const thumbs = $('#galleryThumbs').empty();
@@ -47,45 +45,32 @@
   }
   function renderPhotos() {
     const photos = activeMedia.photos; const photo = photos[photoIndex] || null; setViewerImage(photo ? photo.url : coverUrl);
-    $('#viewerHint, #spinUnavailable, #viewerProgressWrap').prop('hidden', true);
+    $('#videoUnavailable').prop('hidden', true);
     $('#mediaPrev, #mediaNext').prop('hidden', photos.length <= 1);
     $('#mediaCounter').prop('hidden', photos.length <= 1).text(photos.length ? `${photoIndex + 1} / ${photos.length}` : '');
-    viewer.removeClass('is-spin is-dragging').addClass('is-photo'); renderThumbs();
+    viewer.removeClass('is-video').addClass('is-photo'); renderThumbs();
   }
-  function renderSpin() {
-    const frames = activeMedia.frames;
-    $('#mediaPrev, #mediaNext, #mediaCounter, #galleryThumbs').prop('hidden', true); viewer.removeClass('is-photo').addClass('is-spin');
-    if (!frames.length) {
+  function renderVideos() {
+    const videos = activeMedia.videos;
+    $('#mediaPrev, #mediaNext, #mediaCounter, #galleryThumbs').prop('hidden', true); viewer.removeClass('is-photo').addClass('is-video');
+    if (!videos.length) {
       const fallbackPhoto = activeMedia.photos[photoIndex] || activeMedia.photos[0]; setViewerImage(fallbackPhoto ? fallbackPhoto.url : coverUrl);
-      $('#viewerHint, #viewerProgressWrap').prop('hidden', true); $('#spinUnavailable').prop('hidden', false); return;
+      $('#videoUnavailable').prop('hidden', false); return;
     }
-    frameIndex = (frameIndex + frames.length) % frames.length;
-    const frame = frames[frameIndex]; setViewerImage(frame.url); $('#spinUnavailable').prop('hidden', true); $('#viewerHint, #viewerProgressWrap').prop('hidden', false);
-    $('#viewerAngle').text(`${frame.angle}°`); $('#viewerProgress').css('width', `${((frameIndex + 1) / frames.length) * 100}%`);
+    const video = videos[0];
+    $('#viewerImage').prop('hidden', true);
+    $('#videoUnavailable').prop('hidden', true);
+    $('#viewerVideo').attr('src', video.url).attr('poster', video.poster || coverUrl || '').prop('hidden', false);
   }
-  function renderMedia() { $('.media-mode-btn').removeClass('active'); $(`.media-mode-btn[data-media-mode="${mediaMode}"]`).addClass('active'); if (mediaMode === 'spin') renderSpin(); else renderPhotos(); }
-  function stepFrame(delta) { if (mediaMode !== 'spin' || activeMedia.frames.length < 2) return; frameIndex = (frameIndex + delta + activeMedia.frames.length) % activeMedia.frames.length; renderSpin(); }
+  function renderMedia() { $('.media-mode-btn').removeClass('active'); $(`.media-mode-btn[data-media-mode="${mediaMode}"]`).addClass('active'); if (mediaMode === 'videos') renderVideos(); else renderPhotos(); }
 
   $('.media-mode-btn').on('click', function () { setMediaMode($(this).data('media-mode')); });
   $('#mediaPrev').on('click', function () { if (activeMedia.photos.length <= 1) return; photoIndex = (photoIndex - 1 + activeMedia.photos.length) % activeMedia.photos.length; renderMedia(); });
   $('#mediaNext').on('click', function () { if (activeMedia.photos.length <= 1) return; photoIndex = (photoIndex + 1) % activeMedia.photos.length; renderMedia(); });
 
-  if (viewer.length) {
-    viewer.on('pointerdown', function (event) {
-      if (mediaMode !== 'spin' || activeMedia.frames.length < 2) return;
-      const original = event.originalEvent; dragStartX = original.clientX; dragPointerId = original.pointerId; viewer.addClass('is-dragging');
-      if (this.setPointerCapture && dragPointerId !== undefined) this.setPointerCapture(dragPointerId);
-    });
-    viewer.on('pointermove', function (event) {
-      if (dragStartX === null || mediaMode !== 'spin') return;
-      const original = event.originalEvent; const diff = original.clientX - dragStartX;
-      if (Math.abs(diff) >= 18) { stepFrame(diff > 0 ? -1 : 1); dragStartX = original.clientX; }
-    });
-    viewer.on('pointerup pointercancel lostpointercapture', function () { dragStartX = null; dragPointerId = null; viewer.removeClass('is-dragging'); });
-  }
-
   const productId = booking.data('product-id');
   let dailyPrice = parseFloat(String(booking.attr('data-daily-price') || '0').replace(',', '.')) || 0;
+  let minRentalDays = parseInt(booking.attr('data-min-days') || '3', 10) || 3;
   let blockedRanges = [];
   let calDate = new Date(); calDate.setHours(0,0,0,0); calDate.setDate(1);
   let start = null; let end = null; let selectedColorId = ''; let availabilityRequest = null;
@@ -133,22 +118,22 @@
     if(!booking.length) return;
     if($('.swatch').length && !selectedColorId){ blockedRanges=[]; renderCalendar(); return; }
     if(availabilityRequest) availabilityRequest.abort(); booking.addClass('is-loading'); if(!silent) showMessage(text.loading,'muted');
-    availabilityRequest=$.ajax({url:availabilityUrl(),method:'GET',success:function(data){ blockedRanges=data.ranges||[]; const serverPrice=parseFloat(String(data.daily_price||dailyPrice).replace(',','.')); if(!Number.isNaN(serverPrice)) dailyPrice=serverPrice; resetRange(); renderCalendar(); if(!silent) showMessage('','');},error:function(){blockedRanges=[];resetRange();renderCalendar();if(!silent)showMessage(text.invalid,'error');},complete:function(){booking.removeClass('is-loading');availabilityRequest=null;}});
+    availabilityRequest=$.ajax({url:availabilityUrl(),method:'GET',success:function(data){ blockedRanges=data.ranges||[]; const serverPrice=parseFloat(String(data.daily_price||dailyPrice).replace(',','.')); if(!Number.isNaN(serverPrice)) dailyPrice=serverPrice; minRentalDays=parseInt(data.min_rental_days||minRentalDays,10)||minRentalDays; resetRange(); renderCalendar(); if(!silent) showMessage('','');},error:function(){blockedRanges=[];resetRange();renderCalendar();if(!silent)showMessage(text.invalid,'error');},complete:function(){booking.removeClass('is-loading');availabilityRequest=null;}});
   }
 
   $('.swatch').on('click',function(){ $('.swatch').removeClass('active'); $(this).addClass('active'); selectedColorId=String($(this).data('color-id')||''); const colorName=$(this).data('color-'+lang)||$(this).data('color-ru')||''; $('#selectedColorInput').val(selectedColorId); $('#selectedColorName').text(colorName); $('#bookingColorLabel').text(colorName); setMediaForColor(selectedColorId); if(booking.length) loadAvailability(); });
   $('#bookingSize').on('change',function(){ $('#selectedSizeInput').val($(this).val()); });
   if($('.swatch').length) $('.swatch').first().trigger('click'); else { setMediaForColor('default'); if(booking.length) loadAvailability(); }
 
-  $('#bookingCalendar').on('click','.cal-day.free:not(:disabled)',function(){ const chosen=fromIso($(this).data('date')); if(!start||end||chosen<start){start=chosen;end=null;showMessage('','');}else{if(rangeHasBlocked(start,chosen)){showMessage(text.unavailable,'error');return;}end=chosen;showMessage('','');} updateSummary();renderCalendar(); });
+  $('#bookingCalendar').on('click','.cal-day.free:not(:disabled)',function(){ const chosen=fromIso($(this).data('date')); if(!start||end||chosen<start){start=chosen;end=null;showMessage('','');}else{if(rangeHasBlocked(start,chosen)){showMessage(text.unavailable,'error');return;}end=chosen;if(selectedDays()<minRentalDays){showMessage(text.minDays.replace('{days}',minRentalDays),'error');}else{showMessage('','');}} updateSummary();renderCalendar(); });
   $('#calPrev').on('click',function(){ if($(this).prop('disabled'))return;calDate.setMonth(calDate.getMonth()-1);renderCalendar(); });
   $('#calNext').on('click',function(){ calDate.setMonth(calDate.getMonth()+1);renderCalendar(); });
 
   $('#reservationForm').on('submit',function(event){
     event.preventDefault();
-    if($('.swatch').length&&!selectedColorId){showMessage(text.chooseColor,'error');return;} if(!$('#bookingSize').val()){showMessage(text.chooseSize,'error');return;} if(!start||!end){showMessage(text.choosePeriod,'error');return;}
+    if($('.swatch').length&&!selectedColorId){showMessage(text.chooseColor,'error');return;} if(!$('#bookingSize').val()){showMessage(text.chooseSize,'error');return;} if(!start||!end){showMessage(text.choosePeriod,'error');return;} if(selectedDays()<minRentalDays){showMessage(text.minDays.replace('{days}',minRentalDays),'error');return;}
     $('#selectedSizeInput').val($('#bookingSize').val()); const submitButton=$('#reservationSubmit').prop('disabled',true);
-    $.ajax({url:`/ajax/products/${productId}/reserve/`,method:'POST',data:$(this).serialize(),success:function(data){ const total=parseFloat(String(data.total_price||dailyPrice*selectedDays()).replace(',','.'))||0; showMessage(`<strong>${text.sent}</strong><span class="booking-code">${text.code}: ${data.booking_code}</span><span class="booking-price-confirm">${text.total}: ${formatMoney(total)}</span>`,'success'); resetRange();loadAvailability(true);},error:function(xhr){const payload=xhr.responseJSON||{};let message=text.invalid;const errors=payload.errors||{};if(errors.start_date||errors.end_date)message=text.unavailable;if(errors.color)message=text.chooseColor;if(errors.size)message=text.chooseSize;showMessage(message,'error');loadAvailability(true);},complete:function(){submitButton.prop('disabled',false);}});
+    $.ajax({url:`/ajax/products/${productId}/reserve/`,method:'POST',data:$(this).serialize(),success:function(data){ const total=parseFloat(String(data.total_price||dailyPrice*selectedDays()).replace(',','.'))||0; showMessage(`<strong>${text.sent}</strong><span class="booking-code">${text.code}: ${data.booking_code}</span><span class="booking-price-confirm">${text.total}: ${formatMoney(total)}</span>`,'success'); resetRange();loadAvailability(true);},error:function(xhr){const payload=xhr.responseJSON||{};let message=text.invalid;const errors=payload.errors||{};if(errors.start_date)message=text.unavailable;if(errors.end_date)message=Array.isArray(errors.end_date)?errors.end_date[0].message||text.minDays.replace('{days}',minRentalDays):text.minDays.replace('{days}',minRentalDays);if(errors.color)message=text.chooseColor;if(errors.size)message=text.chooseSize;showMessage(message,'error');loadAvailability(true);},complete:function(){submitButton.prop('disabled',false);}});
   });
 
   setMediaMode('photos'); updateSummary(); renderCalendar();

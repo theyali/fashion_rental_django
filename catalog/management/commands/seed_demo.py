@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 from django.conf import settings
@@ -5,11 +6,11 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 from PIL import Image, ImageDraw
 
-from catalog.models import Category, Color, Product, ProductImage
+from catalog.models import Category, Color, Product, ProductImage, ProductVideo
 
 
 class Command(BaseCommand):
-    help = "Create demo catalog, import dresses from /dresses and prepare gallery/360 media"
+    help = "Create demo catalog and import dresses from /dresses with gallery photos and videos"
 
     PALETTE = {
         "black": (31, 31, 31),
@@ -36,16 +37,16 @@ class Command(BaseCommand):
     }
 
     REAL_DRESSES = [
-        {"file": "dress_1.jpeg", "slug": "celeste-evening-dress", "name_az": "Celeste axşam donu", "name_ru": "Вечернее платье Celeste", "name_en": "Celeste Evening Dress", "price": 150, "sizes": "XS, S, M"},
-        {"file": "dress_2.jpeg", "slug": "amara-evening-dress", "name_az": "Amara axşam donu", "name_ru": "Вечернее платье Amara", "name_en": "Amara Evening Dress", "price": 170, "sizes": "S, M, L"},
-        {"file": "dress_3.jpeg", "slug": "elara-evening-dress", "name_az": "Elara axşam donu", "name_ru": "Вечернее платье Elara", "name_en": "Elara Evening Dress", "price": 180, "sizes": "XS, S, M, L"},
-        {"file": "dress_4.jpg", "slug": "noelle-evening-dress", "name_az": "Noelle axşam donu", "name_ru": "Вечернее платье Noelle", "name_en": "Noelle Evening Dress", "price": 200, "sizes": "S, M"},
-        {"file": "dress_5.jpeg", "slug": "seraphine-evening-dress", "name_az": "Seraphine axşam donu", "name_ru": "Вечернее платье Seraphine", "name_en": "Seraphine Evening Dress", "price": 165, "sizes": "XS, S, M"},
-        {"file": "dress_6.jpeg", "slug": "mirelle-evening-dress", "name_az": "Mirelle axşam donu", "name_ru": "Вечернее платье Mirelle", "name_en": "Mirelle Evening Dress", "price": 145, "sizes": "S, M, L"},
-        {"file": "dress_7.avif", "slug": "verona-evening-dress", "name_az": "Verona axşam donu", "name_ru": "Вечернее платье Verona", "name_en": "Verona Evening Dress", "price": 190, "sizes": "XS, S, M, L"},
-        {"file": "dress_8.jpg", "slug": "aveline-evening-dress", "name_az": "Aveline axşam donu", "name_ru": "Вечернее платье Aveline", "name_en": "Aveline Evening Dress", "price": 210, "sizes": "S, M"},
-        {"file": "dress_9.jpg", "slug": "liora-evening-dress", "name_az": "Liora axşam donu", "name_ru": "Вечернее платье Liora", "name_en": "Liora Evening Dress", "price": 175, "sizes": "XS, S, M"},
-        {"file": "dress_10.webp", "slug": "solenne-evening-dress", "name_az": "Solenne axşam donu", "name_ru": "Вечернее платье Solenne", "name_en": "Solenne Evening Dress", "price": 220, "sizes": "S, M, L"},
+        {"file": "dress_1.jpeg", "slug": "celeste-evening-dress", "name_az": "Celeste axşam donu", "name_ru": "Вечернее платье Celeste", "name_en": "Celeste Evening Dress", "rental_price": 150, "sale_price": 620, "sizes": "XS, S, M"},
+        {"file": "dress_2.jpeg", "slug": "amara-evening-dress", "name_az": "Amara axşam donu", "name_ru": "Вечернее платье Amara", "name_en": "Amara Evening Dress", "rental_price": 170, "sale_price": 690, "sizes": "S, M, L"},
+        {"file": "dress_3.jpeg", "slug": "elara-evening-dress", "name_az": "Elara axşam donu", "name_ru": "Вечернее платье Elara", "name_en": "Elara Evening Dress", "rental_price": 180, "sale_price": 720, "sizes": "XS, S, M, L"},
+        {"file": "dress_4.jpg", "slug": "noelle-evening-dress", "name_az": "Noelle axşam donu", "name_ru": "Вечернее платье Noelle", "name_en": "Noelle Evening Dress", "rental_price": 200, "sale_price": 790, "sizes": "S, M"},
+        {"file": "dress_5.jpeg", "slug": "seraphine-evening-dress", "name_az": "Seraphine axşam donu", "name_ru": "Вечернее платье Seraphine", "name_en": "Seraphine Evening Dress", "rental_price": 165, "sale_price": 650, "sizes": "XS, S, M"},
+        {"file": "dress_6.jpeg", "slug": "mirelle-evening-dress", "name_az": "Mirelle axşam donu", "name_ru": "Вечернее платье Mirelle", "name_en": "Mirelle Evening Dress", "rental_price": 145, "sale_price": 590, "sizes": "S, M, L"},
+        {"file": "dress_7.avif", "slug": "verona-evening-dress", "name_az": "Verona axşam donu", "name_ru": "Вечернее платье Verona", "name_en": "Verona Evening Dress", "rental_price": 190, "sale_price": 760, "sizes": "XS, S, M, L"},
+        {"file": "dress_8.jpg", "slug": "aveline-evening-dress", "name_az": "Aveline axşam donu", "name_ru": "Вечернее платье Aveline", "name_en": "Aveline Evening Dress", "rental_price": 210, "sale_price": 840, "sizes": "S, M"},
+        {"file": "dress_9.jpg", "slug": "liora-evening-dress", "name_az": "Liora axşam donu", "name_ru": "Вечернее платье Liora", "name_en": "Liora Evening Dress", "rental_price": 175, "sale_price": 700, "sizes": "XS, S, M"},
+        {"file": "dress_10.webp", "slug": "solenne-evening-dress", "name_az": "Solenne axşam donu", "name_ru": "Вечернее платье Solenne", "name_en": "Solenne Evening Dress", "rental_price": 220, "sale_price": 880, "sizes": "S, M, L"},
     ]
 
     def handle(self, *args, **options):
@@ -70,11 +71,14 @@ class Command(BaseCommand):
                 "name_az": "Aurelia axşam donu",
                 "name_ru": "Вечернее платье Aurelia",
                 "name_en": "Aurelia Evening Dress",
-                "description_az": "Kirayə üçün zərif axşam donu. Rəngə görə ayrıca foto qalereyası, bron təqvimi və 360° baxış mövcuddur.",
-                "description_ru": "Элегантное вечернее платье для аренды. Доступны отдельные фото по цветам, календарь бронирования и 360° обзор.",
-                "description_en": "An elegant evening rental dress with color-specific galleries, booking availability and a 360° viewer.",
+                "description_az": "Kirayə üçün zərif axşam donu. Rəngə görə ayrıca foto qalereyası, video və bron təqvimi mövcuddur.",
+                "description_ru": "Элегантное вечернее платье для аренды. Доступны отдельные фото по цветам, видео и календарь бронирования.",
+                "description_en": "An elegant evening rental dress with color-specific galleries, video and booking availability.",
                 **self.PRODUCT_DETAILS,
                 "product_type": Product.RENTAL,
+                "is_rentable": True,
+                "is_purchasable": False,
+                "min_rental_days": 3,
                 "rental_price": 180,
                 "sale_price": None,
                 "custom_price": None,
@@ -97,6 +101,9 @@ class Command(BaseCommand):
                 "description_en": "Made to measure with fabric and color selection.",
                 **self.PRODUCT_DETAILS,
                 "product_type": Product.CUSTOM,
+                "is_rentable": False,
+                "is_purchasable": False,
+                "min_rental_days": 3,
                 "rental_price": None,
                 "sale_price": None,
                 "custom_price": 950,
@@ -119,6 +126,9 @@ class Command(BaseCommand):
                 "description_en": "A ready tailored set available for event, dinner or editorial rental.",
                 **self.PRODUCT_DETAILS,
                 "product_type": Product.RENTAL,
+                "is_rentable": True,
+                "is_purchasable": False,
+                "min_rental_days": 3,
                 "rental_price": 140,
                 "sale_price": None,
                 "custom_price": None,
@@ -141,6 +151,9 @@ class Command(BaseCommand):
                 "description_en": "A finished piece from the current collection, available to purchase after fitting.",
                 **self.PRODUCT_DETAILS,
                 "product_type": Product.READY,
+                "is_rentable": False,
+                "is_purchasable": True,
+                "min_rental_days": 3,
                 "rental_price": None,
                 "sale_price": 720,
                 "custom_price": None,
@@ -151,10 +164,11 @@ class Command(BaseCommand):
         )
         p4.colors.set([ivory, burgundy])
 
-        self._ensure_demo_media(p1, [black, burgundy, ivory])
-        self._ensure_demo_media(p2, [black, burgundy, ivory])
-        self._ensure_demo_media(p3, [black, ivory])
-        self._ensure_demo_media(p4, [ivory, burgundy])
+        ProductImage.objects.filter(image_type="spin360").delete()
+        self._ensure_demo_gallery(p1, [black, burgundy, ivory])
+        self._ensure_demo_gallery(p2, [black, burgundy, ivory])
+        self._ensure_demo_gallery(p3, [black, ivory])
+        self._ensure_demo_gallery(p4, [ivory, burgundy])
         self._import_real_dresses(dresses, as_pictured)
 
         self.stdout.write(self.style.SUCCESS("Catalog, dress details and daily pricing are ready."))
@@ -165,9 +179,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("/dresses folder was not found; real dress import skipped."))
             return
 
-        description_az = "Atelye kolleksiyasından seçilmiş don. Tədbir və çəkiliş üçün günlük kirayəyə verilir; rəng, ölçü və boş tarixlər məhsul səhifəsində seçilir."
-        description_ru = "Платье из коллекции ателье для посуточной аренды на событие или съемку. Цвет, размер и свободные даты выбираются в карточке изделия."
-        description_en = "A selected atelier dress available for daily event or editorial rental. Choose the color, size and available dates on the product page."
+        description_az = "Atelye kolleksiyasından seçilmiş don. Minimum 3 günlük kirayə və satınalma üçün mövcuddur; rəng, ölçü və boş tarixlər məhsul səhifəsində seçilir."
+        description_ru = "Платье из коллекции ателье доступно для покупки и аренды минимум на 3 дня. Цвет, размер и свободные даты выбираются в карточке изделия."
+        description_en = "A selected atelier dress available to purchase and rent for at least 3 days. Choose the color, size and available dates on the product page."
 
         for index, item in enumerate(self.REAL_DRESSES):
             product, _ = Product.objects.update_or_create(
@@ -182,8 +196,11 @@ class Command(BaseCommand):
                     "description_en": description_en,
                     **self.PRODUCT_DETAILS,
                     "product_type": Product.RENTAL,
-                    "rental_price": item["price"],
-                    "sale_price": None,
+                    "is_rentable": True,
+                    "is_purchasable": True,
+                    "min_rental_days": 3,
+                    "rental_price": item["rental_price"],
+                    "sale_price": item["sale_price"],
                     "custom_price": None,
                     "sizes": item["sizes"],
                     "is_featured": index < 4,
@@ -192,6 +209,7 @@ class Command(BaseCommand):
             )
             product.colors.set([color])
             self._import_gallery_photo(product, color, source_dir / item["file"])
+            self._import_product_video(product, color, source_dir / item["file"])
 
     def _import_gallery_photo(self, product, color, source_path):
         photo = product.images.filter(image_type=ProductImage.GALLERY, color=color, sort_order=0).first()
@@ -207,28 +225,80 @@ class Command(BaseCommand):
             product.cover_image = photo.image.name
             product.save(update_fields=["cover_image"])
 
-    def _ensure_demo_media(self, product, colors):
+    def _import_product_video(self, product, color, source_path):
+        video_path = self._matching_video_path(source_path) or self._generate_video_from_image(product, source_path)
+        if not video_path:
+            self.stdout.write(self.style.WARNING(f"No video found or generated for {source_path.name}; add {source_path.stem}.mp4/.webm/.mov to /dresses."))
+            return
+        if product.videos.filter(color=color, sort_order=0).exists():
+            return
+        video = ProductVideo(product=product, color=color, sort_order=0)
+        with video_path.open("rb") as fh:
+            video.video.save(f"{product.slug}{video_path.suffix.lower()}", File(fh), save=False)
+        if product.cover_image:
+            video.poster = product.cover_image.name
+        video.save()
+
+    def _matching_video_path(self, source_path):
+        for suffix in (".mp4", ".webm", ".mov", ".m4v"):
+            candidate = source_path.with_suffix(suffix)
+            if candidate.exists():
+                return candidate
+        return None
+
+    def _generate_video_from_image(self, product, source_path):
+        output_dir = Path(settings.MEDIA_ROOT) / "generated_videos"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir / f"{product.slug}.mp4"
+        if output_path.exists():
+            return output_path
+        if not self._run_ffmpeg_image_video(source_path, output_path):
+            temp_source = output_dir / f"{product.slug}-source.jpg"
+            try:
+                with Image.open(source_path) as image:
+                    image.convert("RGB").save(temp_source, quality=92)
+            except Exception:
+                return None
+            if not self._run_ffmpeg_image_video(temp_source, output_path):
+                return None
+        return output_path
+
+    def _run_ffmpeg_image_video(self, source_path, output_path):
+        command = [
+            "ffmpeg",
+            "-y",
+            "-loop",
+            "1",
+            "-i",
+            str(source_path),
+            "-t",
+            "4",
+            "-vf",
+            "scale=1080:-2,format=yuv420p",
+            "-movflags",
+            "+faststart",
+            str(output_path),
+        ]
+        try:
+            subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            return False
+        return True
+
+    def _ensure_demo_gallery(self, product, colors):
         demo_dir = Path(settings.MEDIA_ROOT) / "demo_generated"
         demo_dir.mkdir(parents=True, exist_ok=True)
-        angles = list(range(0, 360, 45))
         first_cover = None
 
         for color in colors:
-            frames = product.images.filter(color=color, image_type=ProductImage.SPIN_360).order_by("angle", "sort_order")
-            if not frames.exists():
-                rgb = self.PALETTE.get(color.name_en.lower(), (40, 40, 40))
-                for idx, angle in enumerate(angles):
-                    path = demo_dir / f"{product.slug}-{color.id}-{angle}.png"
-                    self._draw_frame(path, rgb, angle, product.product_type)
-                    with path.open("rb") as fh:
-                        frame = ProductImage(product=product, color=color, image_type=ProductImage.SPIN_360, angle=angle, sort_order=idx)
-                        frame.image.save(path.name, File(fh), save=True)
-                frames = product.images.filter(color=color, image_type=ProductImage.SPIN_360).order_by("angle", "sort_order")
-
-            first_frame = frames.first()
             gallery_photo = product.images.filter(color=color, image_type=ProductImage.GALLERY).order_by("sort_order", "id").first()
-            if not gallery_photo and first_frame:
-                gallery_photo = ProductImage.objects.create(product=product, color=color, image=first_frame.image.name, image_type=ProductImage.GALLERY, angle=0, sort_order=0)
+            if not gallery_photo:
+                rgb = self.PALETTE.get(color.name_en.lower(), (40, 40, 40))
+                path = demo_dir / f"{product.slug}-{color.id}-gallery.png"
+                self._draw_frame(path, rgb, 0, product.product_type)
+                with path.open("rb") as fh:
+                    gallery_photo = ProductImage(product=product, color=color, image_type=ProductImage.GALLERY, angle=0, sort_order=0)
+                    gallery_photo.image.save(path.name, File(fh), save=True)
             if first_cover is None and gallery_photo:
                 first_cover = gallery_photo.image.name
 
@@ -256,5 +326,5 @@ class Command(BaseCommand):
         draw.line((cx - shoulder_w // 2, 300, cx - body_w, 560), fill=rgb, width=42)
         draw.line((cx + shoulder_w // 2, 300, cx + body_w, 560), fill=rgb, width=42)
         draw.ellipse((cx - 170, 905, cx + 170, 940), fill=(210, 205, 198))
-        draw.text((115, 985), f"DEMO 360° / {angle:03d}°", fill=(95, 91, 86))
+        draw.text((115, 985), "DEMO PHOTO", fill=(95, 91, 86))
         image.save(path, quality=92)

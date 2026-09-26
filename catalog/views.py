@@ -21,19 +21,19 @@ SUPPORTED_LANGUAGES = {"az", "ru", "en"}
 
 SEO_COPY = {
     "az": {
-        "home": ("Atelier Rental — Bakıda geyim kirayəsi", "Bakıda dizayner geyimlərinin kirayəsi, hazır kolleksiya və fərdi tikiş. Onlayn bron, rəng seçimi və 360° baxış."),
+        "home": ("Atelier Rental — Bakıda geyim kirayəsi", "Bakıda dizayner geyimlərinin kirayəsi, hazır kolleksiya və fərdi tikiş. Onlayn bron, rəng seçimi və video baxış."),
         "catalog": ("Geyim kataloqu — Atelier Rental", "Kirayə, hazır geyim və sifarişlə tikilən modellər. Ölçü, rəng və qiymət üzrə kataloqa baxın."),
         "about": ("Haqqımızda — Atelier Rental", "Atelier Rental: tədbirlər, çəkilişlər və xüsusi günlər üçün seçilmiş geyim kolleksiyası və fərdi tikiş xidməti."),
         "contacts": ("Əlaqə — Atelier Rental", "Kirayə, fitting və fərdi sifariş üçün Atelier Rental ilə əlaqə saxlayın."),
     },
     "ru": {
-        "home": ("Atelier Rental — аренда одежды в Баку", "Аренда дизайнерской одежды в Баку, готовая коллекция и индивидуальный пошив. Онлайн-бронирование, цвета и 360° обзор."),
+        "home": ("Atelier Rental — аренда одежды в Баку", "Аренда дизайнерской одежды в Баку, готовая коллекция и индивидуальный пошив. Онлайн-бронирование, цвета и видео."),
         "catalog": ("Каталог одежды — Atelier Rental", "Аренда, готовые изделия и пошив на заказ. Фильтруйте каталог по размеру, цвету и цене."),
         "about": ("О нас — Atelier Rental", "Atelier Rental — коллекция образов для мероприятий, съёмок и особых случаев, а также индивидуальный пошив."),
         "contacts": ("Контакты — Atelier Rental", "Свяжитесь с Atelier Rental по вопросам аренды, примерки и индивидуального заказа."),
     },
     "en": {
-        "home": ("Atelier Rental — fashion rental in Baku", "Designer fashion rental in Baku, ready-made pieces and made-to-order service with online booking, colors and 360° viewing."),
+        "home": ("Atelier Rental — fashion rental in Baku", "Designer fashion rental in Baku, ready-made pieces and made-to-order service with online booking, colors and video."),
         "catalog": ("Fashion catalog — Atelier Rental", "Browse rental, ready-made and made-to-order pieces by size, color and price."),
         "about": ("About — Atelier Rental", "Atelier Rental curates fashion for events, editorials and special occasions alongside made-to-order service."),
         "contacts": ("Contact — Atelier Rental", "Contact Atelier Rental for rental dates, fitting and made-to-order enquiries."),
@@ -64,8 +64,8 @@ def _seo_context(request, page):
 
 def _catalog_price_expression():
     return Case(
-        When(product_type=Product.RENTAL, then=F("rental_price")),
-        When(product_type=Product.READY, then=F("sale_price")),
+        When(is_rentable=True, rental_price__isnull=False, then=F("rental_price")),
+        When(is_purchasable=True, sale_price__isnull=False, then=F("sale_price")),
         When(product_type=Product.CUSTOM, then=F("custom_price")),
         default=None,
         output_field=DecimalField(max_digits=10, decimal_places=2),
@@ -142,8 +142,8 @@ def _notify_reservation(reservation, lang):
 
 def home(request):
     featured = Product.objects.filter(is_active=True, is_featured=True).prefetch_related("images", "colors")[:6]
-    rental = Product.objects.filter(is_active=True, product_type=Product.RENTAL).prefetch_related("images", "colors")[:4]
-    ready = Product.objects.filter(is_active=True, product_type=Product.READY).prefetch_related("images", "colors")[:4]
+    rental = Product.objects.filter(is_active=True, is_rentable=True).prefetch_related("images", "colors")[:4]
+    ready = Product.objects.filter(is_active=True, is_purchasable=True).prefetch_related("images", "colors")[:4]
     custom = Product.objects.filter(is_active=True, product_type=Product.CUSTOM).prefetch_related("images", "colors")[:4]
     context = {"featured": featured, "rental": rental, "ready": ready, "custom": custom, **_seo_context(request, "home")}
     if featured and featured[0].cover_image:
@@ -160,8 +160,12 @@ def catalog(request):
     price_max = request.GET.get("price_max", "").strip()
     sort = request.GET.get("sort", "featured").strip()
 
-    if product_type in {Product.RENTAL, Product.READY, Product.CUSTOM}:
-        products = products.filter(product_type=product_type)
+    if product_type == Product.RENTAL:
+        products = products.filter(is_rentable=True)
+    elif product_type == Product.READY:
+        products = products.filter(is_purchasable=True)
+    elif product_type == Product.CUSTOM:
+        products = products.filter(product_type=Product.CUSTOM)
     else:
         product_type = ""
     if category:
@@ -214,24 +218,27 @@ def catalog(request):
 
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product.objects.select_related("category").prefetch_related("colors", "images__color"), slug=slug, is_active=True)
+    product = get_object_or_404(Product.objects.select_related("category").prefetch_related("colors", "images__color", "videos__color"), slug=slug, is_active=True)
     media_by_color = {}
     for image in product.images.all():
+        if image.image_type != ProductImage.GALLERY:
+            continue
         key = str(image.color_id or "default")
-        bucket = media_by_color.setdefault(key, {"photos": [], "frames": []})
+        bucket = media_by_color.setdefault(key, {"photos": [], "videos": []})
         item = {"id": image.id, "url": image.image.url, "angle": image.angle, "sort": image.sort_order}
-        if image.image_type == ProductImage.SPIN_360:
-            bucket["frames"].append(item)
-        else:
-            bucket["photos"].append(item)
+        bucket["photos"].append(item)
+    for video in product.videos.all():
+        key = str(video.color_id or "default")
+        bucket = media_by_color.setdefault(key, {"photos": [], "videos": []})
+        bucket["videos"].append({"id": video.id, "url": video.video.url, "poster": video.poster.url if video.poster else "", "sort": video.sort_order})
     for bucket in media_by_color.values():
         bucket["photos"].sort(key=lambda item: (item["sort"], item["id"]))
-        bucket["frames"].sort(key=lambda item: (item["angle"], item["sort"], item["id"]))
+        bucket["videos"].sort(key=lambda item: (item["sort"], item["id"]))
 
     lang = _lang(request)
     product_name = _localized_product_name(product, lang)
     product_description = _localized_product_description(product, lang)
-    price = product.rental_price or product.sale_price or product.custom_price
+    price = product.sale_price or product.rental_price or product.custom_price
     seo_image = request.build_absolute_uri(product.cover_image.url) if product.cover_image else ""
     schema = {
         "@context": "https://schema.org",
@@ -242,7 +249,7 @@ def product_detail(request, slug):
         "image": [seo_image] if seo_image else [],
         "offers": {"@type": "Offer", "priceCurrency": "AZN", "price": str(price or "0"), "availability": "https://schema.org/InStock", "url": f"{settings.SITE_URL}{product.get_absolute_url()}"},
     }
-    if product.product_type == Product.RENTAL:
+    if product.is_rentable:
         schema["offers"]["priceSpecification"] = {"@type": "UnitPriceSpecification", "priceCurrency": "AZN", "price": str(product.rental_price or "0"), "unitText": "DAY"}
 
     return render(request, "catalog/product_detail.html", {
@@ -305,7 +312,7 @@ def ajax_set_language(request):
 
 
 def ajax_booked_dates(request, product_id):
-    product = get_object_or_404(Product.objects.prefetch_related("colors"), pk=product_id, is_active=True, product_type=Product.RENTAL)
+    product = get_object_or_404(Product.objects.prefetch_related("colors"), pk=product_id, is_active=True, is_rentable=True)
     reservations = product.reservations.filter(status__in=[Reservation.PENDING, Reservation.CONFIRMED], end_date__gte=date.today())
     color_id = request.GET.get("color", "").strip()
     if product.colors.exists():
@@ -315,7 +322,7 @@ def ajax_booked_dates(request, product_id):
     else:
         reservations = reservations.filter(color__isnull=True)
     ranges = [{"start": reservation.start_date.isoformat(), "end": reservation.end_date.isoformat()} for reservation in reservations.only("start_date", "end_date")]
-    return JsonResponse({"ranges": ranges, "today": date.today().isoformat(), "daily_price": str(product.rental_price or "0")})
+    return JsonResponse({"ranges": ranges, "today": date.today().isoformat(), "daily_price": str(product.rental_price or "0"), "min_rental_days": product.min_rental_days})
 
 
 @require_POST
@@ -325,7 +332,7 @@ def ajax_reserve(request, product_id):
         return JsonResponse({"ok": False, "error": "invalid_form", "errors": form.errors.get_json_data()}, status=400)
     try:
         with transaction.atomic():
-            product = get_object_or_404(Product.objects.select_for_update().prefetch_related("colors"), pk=product_id, is_active=True, product_type=Product.RENTAL)
+            product = get_object_or_404(Product.objects.select_for_update().prefetch_related("colors"), pk=product_id, is_active=True, is_rentable=True)
             reservation = form.save(commit=False)
             reservation.product = product
             reservation.calculate_pricing()

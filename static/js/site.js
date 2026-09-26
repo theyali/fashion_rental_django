@@ -1,8 +1,8 @@
 (function ($) {
   const translations = {
-    az: {home:'Ana səhifə', catalog:'Kataloq', about:'Haqqımızda', contacts:'Əlaqə', viewer360:'360° baxış'},
-    en: {home:'Home', catalog:'Catalog', about:'About', contacts:'Contacts', viewer360:'360° view'},
-    ru: {home:'Главная', catalog:'Каталог', about:'О нас', contacts:'Контакты', viewer360:'360° обзор'}
+    az: {home:'Ana səhifə', catalog:'Kataloq', about:'Haqqımızda', contacts:'Əlaqə', video:'Video'},
+    en: {home:'Home', catalog:'Catalog', about:'About', contacts:'Contacts', video:'Video'},
+    ru: {home:'Главная', catalog:'Каталог', about:'О нас', contacts:'Контакты', video:'Видео'}
   };
 
   function swapLocalContent(lang) {

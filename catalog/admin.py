@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Color, ContactMessage, Favorite, Product, ProductImage, Reservation, SiteSettings
+from .models import Category, Color, ContactMessage, Favorite, Product, ProductImage, ProductVideo, Reservation, SiteSettings
 
 
 class ProductImageInline(admin.TabularInline):
@@ -10,20 +10,27 @@ class ProductImageInline(admin.TabularInline):
     ordering = ("image_type", "color", "sort_order", "angle")
 
 
+class ProductVideoInline(admin.TabularInline):
+    model = ProductVideo
+    extra = 0
+    fields = ("color", "video", "poster", "sort_order")
+    ordering = ("color", "sort_order")
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name_az", "category", "product_type", "rental_price", "sale_price", "custom_price", "is_featured", "is_active")
-    list_filter = ("product_type", "is_featured", "is_active", "category", "colors")
+    list_display = ("name_az", "category", "product_type", "is_rentable", "is_purchasable", "rental_price", "sale_price", "is_featured", "is_active")
+    list_filter = ("product_type", "is_rentable", "is_purchasable", "is_featured", "is_active", "category", "colors")
     search_fields = ("name_az", "name_ru", "name_en", "slug")
     prepopulated_fields = {"slug": ("name_en",)}
     filter_horizontal = ("colors",)
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductVideoInline]
     fieldsets = (
-        ("Основное", {"fields": ("category", "slug", "product_type", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
+        ("Основное", {"fields": ("category", "slug", "product_type", "is_rentable", "is_purchasable", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
         ("AZ", {"fields": ("name_az", "description_az", "material_az", "composition_az", "fit_az", "length_az", "care_az")}),
         ("RU", {"fields": ("name_ru", "description_ru", "material_ru", "composition_ru", "fit_ru", "length_ru", "care_ru")}),
         ("EN", {"fields": ("name_en", "description_en", "material_en", "composition_en", "fit_en", "length_en", "care_en")}),
-        ("Цены", {"fields": ("rental_price", "sale_price", "custom_price"), "description": "Для аренды rental_price — цена за один календарный день."}),
+        ("Цены", {"fields": ("rental_price", "sale_price", "custom_price", "min_rental_days"), "description": "Для аренды rental_price — цена за один календарный день."}),
     )
 
 
@@ -44,6 +51,14 @@ class ColorAdmin(admin.ModelAdmin):
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ("product", "image_type", "color", "angle", "sort_order")
     list_filter = ("image_type", "color", "product")
+    search_fields = ("product__name_az", "product__name_ru", "product__name_en")
+    list_select_related = ("product", "color")
+
+
+@admin.register(ProductVideo)
+class ProductVideoAdmin(admin.ModelAdmin):
+    list_display = ("product", "color", "video", "sort_order")
+    list_filter = ("color", "product")
     search_fields = ("product__name_az", "product__name_ru", "product__name_en")
     list_select_related = ("product", "color")
 

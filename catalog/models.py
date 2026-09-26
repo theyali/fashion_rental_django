@@ -70,6 +70,9 @@ class Product(models.Model):
     care_ru = models.CharField(max_length=220, blank=True)
     care_en = models.CharField(max_length=220, blank=True)
     product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=RENTAL)
+    is_rentable = models.BooleanField(default=True)
+    is_purchasable = models.BooleanField(default=False)
+    min_rental_days = models.PositiveSmallIntegerField(default=3)
     rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Цена аренды за 1 календарный день.")
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     custom_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -94,22 +97,37 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     GALLERY = "gallery"
-    SPIN_360 = "spin360"
-    IMAGE_TYPES = [(GALLERY, "Фото галереи"), (SPIN_360, "360° кадр")]
+    IMAGE_TYPES = [(GALLERY, "Фото галереи")]
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_images")
     image = models.ImageField(upload_to="products/media/")
     image_type = models.CharField(max_length=12, choices=IMAGE_TYPES, default=GALLERY)
-    angle = models.PositiveSmallIntegerField(default=0, help_text="Для 360°: 0..359")
+    angle = models.PositiveSmallIntegerField(default=0, help_text="Не используется для обычной галереи.")
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["image_type", "color_id", "sort_order", "angle", "id"]
-        verbose_name = "Фото / 360 кадр"
-        verbose_name_plural = "Фото / 360 кадры"
+        verbose_name = "Фото изделия"
+        verbose_name_plural = "Фото изделий"
 
     def __str__(self):
-        return f"{self.product} — {self.angle}°" if self.image_type == self.SPIN_360 else f"{self.product} — фото"
+        return f"{self.product} — фото"
+
+
+class ProductVideo(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="videos")
+    color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_videos")
+    video = models.FileField(upload_to="products/videos/")
+    poster = models.ImageField(upload_to="products/video_posters/", blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["color_id", "sort_order", "id"]
+        verbose_name = "Видео изделия"
+        verbose_name_plural = "Видео изделий"
+
+    def __str__(self):
+        return f"{self.product} — видео"
 
 
 class Reservation(models.Model):
@@ -156,10 +174,14 @@ class Reservation(models.Model):
         if self.start_date and self.end_date and self.end_date < self.start_date:
             errors["end_date"] = "Bitmə tarixi başlanğıc tarixindən əvvəl ola bilməz."
         if self.product_id:
-            if self.product.product_type != Product.RENTAL:
+            if not self.product.is_rentable:
                 errors["product"] = "Yalnız kirayə məhsullarını bron etmək olar."
             elif self.product.rental_price is None:
                 errors["product"] = "Kirayə məhsulu üçün günlük qiymət təyin edilməyib."
+            if self.start_date and self.end_date:
+                rental_days = (self.end_date - self.start_date).days + 1
+                if rental_days < self.product.min_rental_days:
+                    errors["end_date"] = f"Minimum kirayə müddəti {self.product.min_rental_days} gündür."
             available_sizes = [item.strip() for item in self.product.sizes.split(",") if item.strip()]
             if available_sizes:
                 if not self.size:

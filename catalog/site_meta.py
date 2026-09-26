@@ -5,9 +5,9 @@ from .models import SiteSettings
 
 
 DEFAULT_DESCRIPTIONS = {
-    "az": "Bakıda dizayner geyimlərinin kirayəsi, hazır kolleksiya və fərdi tikiş. Rəng seçimi, 360° baxış və onlayn bron.",
-    "ru": "Аренда дизайнерской одежды в Баку, готовая коллекция и индивидуальный пошив. Выбор цвета, 360° обзор и онлайн-бронирование.",
-    "en": "Designer fashion rental in Baku, ready-made pieces and made-to-order service with color selection, 360° view and online booking.",
+    "az": "Bakıda dizayner geyimlərinin kirayəsi, hazır kolleksiya və fərdi tikiş. Rəng seçimi, video və onlayn bron.",
+    "ru": "Аренда дизайнерской одежды в Баку, готовая коллекция и индивидуальный пошив. Выбор цвета, видео и онлайн-бронирование.",
+    "en": "Designer fashion rental in Baku, ready-made pieces and made-to-order service with color selection, video and online booking.",
 }
 
 
