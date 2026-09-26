@@ -72,7 +72,7 @@ PORT="${PORT:-8000}"
 if [ "${DEBUG:-0}" = "1" ] || [ "${DEBUG:-0}" = "true" ] || [ "${DEBUG:-0}" = "True" ]; then
   set -- python manage.py runserver 0.0.0.0:${PORT}
 else
-  set -- uvicorn analitika_aleksey.asgi:application --host 0.0.0.0 --port ${PORT} --workers ${UVICORN_WORKERS:-2}
+  set -- gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS:-2} --threads ${GUNICORN_THREADS:-2} --timeout ${GUNICORN_TIMEOUT:-60} --access-logfile - --error-logfile -
 fi
 
 run_with_optional_file_logs "$@"
