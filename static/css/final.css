@@ -41,17 +41,29 @@ body{overflow-x:hidden;text-rendering:optimizeLegibility;-webkit-font-smoothing:
 .product-card__view{transition:opacity .25s ease,transform .25s ease}
 .product-card:hover .product-card__view{transform:translateY(-2px)}
 
-.product-detail{max-width:var(--lux-max);gap:clamp(34px,5vw,88px)}
-.product-viewer-wrap{top:94px}
-.product-info{max-width:680px}
+.product-detail{max-width:var(--lux-max);grid-template-columns:minmax(0,1.14fr) minmax(360px,.86fr);gap:clamp(34px,5vw,76px);align-items:start}
+.product-viewer-wrap{position:static;top:auto}
+.product-info{max-width:640px;position:static;padding-top:34px}
 .product-info h1{max-width:700px}
 .product-description{font-size:14px}
 .media-stage{background:#ece7df}
 .media-thumb{background:#eee9e2}
 .media-thumb img{object-fit:cover}
 .media-mode-btn,.media-arrow,.swatch,.cal-day,.nav-toggle,.lang-btn{touch-action:manipulation}
+.site-search-trigger{border:0;background:transparent;cursor:pointer}
+body.search-open{overflow:hidden}
+.site-search-overlay{position:fixed;inset:0;z-index:10000;display:grid;align-items:start;justify-items:center;padding:76px max(24px,env(safe-area-inset-right)) 40px max(24px,env(safe-area-inset-left));background:#fff;color:#171715}
+.site-search-overlay[hidden]{display:none}
+.site-search-close{position:fixed;top:56px;right:max(44px,env(safe-area-inset-right));width:34px;height:34px;border:0;background:transparent;color:#111;font-size:35px;font-weight:300;line-height:1;cursor:pointer}
+.site-search-form{width:min(1060px,52vw);margin-top:0}
+.site-search-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.site-search-field{display:grid;grid-template-columns:1fr 38px;align-items:center;border-bottom:1px solid #111}
+.site-search-field input{width:100%;min-width:0;border:0;background:transparent;padding:8px 0 13px;font-size:16px;color:#222;outline:0}
+.site-search-field input::placeholder{color:#444;opacity:1}
+.site-search-submit{display:grid;place-items:center;width:38px;height:38px;border:0;background:transparent;color:#111;cursor:pointer}
+.site-search-submit svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
 
-.booking-block{border-top:1px solid var(--lux-line);margin-top:10px}
+.booking-block{border-top:1px solid var(--lux-line);margin-top:6px}
 .booking-choice select,.reservation-form input,.reservation-form textarea{border-radius:0}
 .btn-dark{transition:background .2s ease,transform .2s ease}.btn-dark:hover{background:#30302d}.btn-dark:active{transform:translateY(1px)}
 
@@ -72,6 +84,24 @@ body{overflow-x:hidden;text-rendering:optimizeLegibility;-webkit-font-smoothing:
 .luxury-submit{display:flex;align-items:center;justify-content:space-between;margin-top:22px;min-height:54px}
 .form-honeypot{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
 .field-error{display:block;margin-top:8px;color:#9e2f2f;font-size:11px;line-height:1.5}
+.listing-submit{max-width:1320px;padding-top:110px;padding-bottom:120px}
+.listing-submit__head{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,420px);gap:50px;align-items:end;padding-bottom:46px;border-bottom:1px solid var(--lux-line)}
+.listing-submit__head h1{font-family:'Cormorant Garamond',serif;font-size:clamp(62px,8vw,118px);font-weight:400;line-height:.9;letter-spacing:-.025em;margin:0}
+.listing-submit__head p{color:var(--lux-muted);line-height:1.7;margin:0 0 8px}
+.listing-form{padding-top:24px}
+.listing-form__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px}
+.luxury-field select,.luxury-field input[type=file]{display:block;width:100%;border:0;background:transparent;padding:6px 0;font-size:15px;outline:0}
+.luxury-field select[multiple]{min-height:112px}
+.listing-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}
+.listing-upload{display:block;border:1px solid var(--lux-line);padding:22px;background:#fbfaf8}
+.listing-upload>span{display:block;margin-bottom:14px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--lux-muted)}
+.listing-upload input{display:block;width:100%;font-size:12px}
+.account-listings{padding-top:44px}
+.account-listings__rows{border-top:1px solid var(--lux-line)}
+.account-listing-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--lux-line)}
+.account-listing-row span{font-family:'Cormorant Garamond',serif;font-size:24px}
+.account-listing-row strong{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--lux-muted);font-weight:500}
+.account-listings__empty{color:var(--lux-muted);line-height:1.7}
 
 .flash-stack{position:fixed;z-index:120;top:92px;right:max(22px,env(safe-area-inset-right));width:min(430px,calc(100vw - 44px));display:grid;gap:10px}
 .flash-message{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;background:#171715;color:#f8f6f2;padding:16px 18px;box-shadow:0 18px 50px rgba(17,17,15,.16);font-size:12px;line-height:1.55}
@@ -91,6 +121,7 @@ body{overflow-x:hidden;text-rendering:optimizeLegibility;-webkit-font-smoothing:
 @media (max-width:1100px){
   .luxury-footer{grid-template-columns:1fr 1fr;gap:35px}.footer-links{grid-column:1/-1;justify-content:flex-start}
   .contact-intro{position:static}
+  .site-search-form{width:min(760px,72vw)}
 }
 
 @media (max-width:1000px){
@@ -98,8 +129,9 @@ body{overflow-x:hidden;text-rendering:optimizeLegibility;-webkit-font-smoothing:
   .main-nav{top:64px;padding:26px max(24px,env(safe-area-inset-left));gap:22px;box-shadow:0 18px 40px rgba(17,17,15,.08)}
   .main-nav a{font-size:13px;padding:4px 0}
   .hero__copy:before{left:28px}
-  .product-viewer-wrap{position:static}
+  .product-viewer-wrap,.product-info{position:static}
   .final-contact-page{grid-template-columns:1fr;gap:55px}
+  .listing-form__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 @media (max-width:700px){
@@ -124,6 +156,15 @@ body{overflow-x:hidden;text-rendering:optimizeLegibility;-webkit-font-smoothing:
 
   .final-contact-page{padding-left:20px!important;padding-right:20px!important}.contact-page h1{font-size:clamp(58px,18vw,82px)}
   .flash-stack{top:76px;right:12px;width:calc(100vw - 24px)}
+  .site-search-overlay{padding-top:78px}
+  .site-search-form{width:calc(100vw - 48px)}
+  .site-search-close{top:25px;right:22px;font-size:32px}
+  .site-search-field input{font-size:15px}
+  .site-search-submit{width:34px}
+  .listing-submit{padding-top:70px;padding-bottom:80px}
+  .listing-submit__head{grid-template-columns:1fr;gap:20px;padding-bottom:32px}
+  .listing-form__grid,.listing-upload-grid{grid-template-columns:1fr}
+  .account-listing-row{align-items:flex-start;flex-direction:column;gap:6px}
 
   .luxury-footer{grid-template-columns:1fr;margin-top:70px;padding:40px max(20px,env(safe-area-inset-left)) max(40px,env(safe-area-inset-bottom));gap:30px}.footer-links{grid-column:auto;justify-content:flex-start;gap:16px}.footer-contact{font-size:12px}
 }

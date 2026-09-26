@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import connection, transaction
-from django.db.models import Case, DecimalField, F, When
+from django.db.models import Case, DecimalField, F, Q, When
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
@@ -151,7 +151,7 @@ def home(request):
     return render(request, "catalog/home.html", context)
 
 
-def catalog(request):
+def catalog(request, section="all"):
     products = Product.objects.filter(is_active=True).select_related("category").prefetch_related("colors", "images").annotate(catalog_price=_catalog_price_expression())
     product_type = request.GET.get("type", "").strip()
     category = request.GET.get("category", "").strip()
@@ -159,6 +159,16 @@ def catalog(request):
     size = request.GET.get("size", "").strip().upper()
     price_max = request.GET.get("price_max", "").strip()
     sort = request.GET.get("sort", "featured").strip()
+    query = request.GET.get("q", "").strip()
+
+    if section == "couture":
+        products = products.filter(source=Product.SOURCE_COUTURE)
+    elif section == "sale":
+        products = products.filter(source=Product.SOURCE_USER, moderation_status=Product.MODERATION_APPROVED, is_purchasable=True)
+    elif section == "rental":
+        products = products.filter(source=Product.SOURCE_USER, moderation_status=Product.MODERATION_APPROVED, is_rentable=True)
+    else:
+        section = "all"
 
     if product_type == Product.RENTAL:
         products = products.filter(is_rentable=True)
@@ -187,6 +197,13 @@ def catalog(request):
                 price_max = ""
         except (InvalidOperation, ValueError):
             price_max = ""
+    if query:
+        products = products.filter(
+            Q(brand__icontains=query)
+            | Q(name_az__icontains=query)
+            | Q(name_ru__icontains=query)
+            | Q(name_en__icontains=query)
+        )
 
     name_sort_field = {"az": "name_az", "ru": "name_ru", "en": "name_en"}[_lang(request)]
     sort_options = {
@@ -212,6 +229,8 @@ def catalog(request):
         "active_size": size,
         "active_price_max": price_max,
         "active_sort": sort,
+        "active_query": query,
+        "catalog_section": section,
         **_seo_context(request, "catalog"),
     }
     return render(request, "catalog/catalog.html", context)
@@ -227,7 +246,8 @@ def product_detail(request, slug):
         bucket = media_by_color.setdefault(key, {"photos": [], "videos": []})
         item = {"id": image.id, "url": image.image.url, "angle": image.angle, "sort": image.sort_order}
         bucket["photos"].append(item)
-    for video in product.videos.all():
+    product_videos = list(product.videos.all())
+    for video in product_videos:
         key = str(video.color_id or "default")
         bucket = media_by_color.setdefault(key, {"photos": [], "videos": []})
         bucket["videos"].append({"id": video.id, "url": video.video.url, "poster": video.poster.url if video.poster else "", "sort": video.sort_order})
@@ -249,6 +269,8 @@ def product_detail(request, slug):
         "image": [seo_image] if seo_image else [],
         "offers": {"@type": "Offer", "priceCurrency": "AZN", "price": str(price or "0"), "availability": "https://schema.org/InStock", "url": f"{settings.SITE_URL}{product.get_absolute_url()}"},
     }
+    if product.brand:
+        schema["brand"] = {"@type": "Brand", "name": product.brand}
     if product.is_rentable:
         schema["offers"]["priceSpecification"] = {"@type": "UnitPriceSpecification", "priceCurrency": "AZN", "price": str(product.rental_price or "0"), "unitText": "DAY"}
 
@@ -256,6 +278,7 @@ def product_detail(request, slug):
         "product": product,
         "product_sizes": _product_sizes(product),
         "media_by_color": media_by_color,
+        "has_videos": bool(product_videos),
         "seo_title": f"{product_name} — {settings.SITE_NAME}",
         "seo_description": product_description[:155],
         "seo_image": seo_image,

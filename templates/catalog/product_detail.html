@@ -9,22 +9,37 @@
 <section class="product-detail section-wide">
   <div class="product-viewer-wrap">
     {{ media_by_color|json_script:"productMediaData" }}
-    <div class="media-mode-switch">
-      <button type="button" class="media-mode-btn active" data-media-mode="photos">{% if site_lang == 'en' %}Photos{% elif site_lang == 'ru' %}Фото{% else %}Fotolar{% endif %}</button>
-      <button type="button" class="media-mode-btn" data-media-mode="videos">{% if site_lang == 'en' %}Video{% elif site_lang == 'ru' %}Видео{% else %}Video{% endif %}</button>
-    </div>
+    {% if has_videos %}
+      <div class="media-mode-switch">
+        <button type="button" class="media-mode-btn active" data-media-mode="photos">{% if site_lang == 'en' %}Photos{% elif site_lang == 'ru' %}Фото{% else %}Fotolar{% endif %}</button>
+        <button type="button" class="media-mode-btn" data-media-mode="videos">{% if site_lang == 'en' %}Video{% elif site_lang == 'ru' %}Видео{% else %}Video{% endif %}</button>
+      </div>
+    {% endif %}
     <div class="product-viewer is-photo" id="productViewer" data-cover-url="{% if product.cover_image %}{{ product.cover_image.url }}{% endif %}">
       <img id="viewerImage" {% if product.cover_image %}src="{{ product.cover_image.url }}"{% endif %} alt="{{ product.name_en }}" draggable="false">
       <video id="viewerVideo" controls playsinline preload="metadata" hidden></video>
       <button type="button" class="media-arrow media-arrow--prev" id="mediaPrev">←</button>
       <button type="button" class="media-arrow media-arrow--next" id="mediaNext">→</button>
       <div class="media-counter" id="mediaCounter"></div>
-      <div class="media-unavailable" id="videoUnavailable" hidden>
-        <strong>{% if site_lang == 'en' %}Video{% elif site_lang == 'ru' %}Видео{% else %}Video{% endif %}</strong>
-        <span>{% if site_lang == 'en' %}Video is not uploaded for this dress yet.{% elif site_lang == 'ru' %}Видео для этого платья пока не загружено.{% else %}Bu don üçün video hələ əlavə edilməyib.{% endif %}</span>
-      </div>
     </div>
     <div class="media-thumbs" id="galleryThumbs"></div>
+
+    <div class="product-media-details">
+      <p class="product-description product-description--under-media">
+        {% if site_lang == 'en' %}{{ product.description_en }}{% elif site_lang == 'ru' %}{{ product.description_ru }}{% else %}{{ product.description_az|default:product.description_ru }}{% endif %}
+      </p>
+      <div class="product-specs product-specs--under-media">
+        <div class="product-specs__title">{% if site_lang == 'en' %}Product details{% elif site_lang == 'ru' %}Характеристики{% else %}Məhsul detalları{% endif %}</div>
+        {% if product.brand %}<div class="product-spec-row"><span>Brand</span><strong>{{ product.brand }}</strong></div>{% endif %}
+        {% if product.material_az or product.material_ru or product.material_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Material{% elif site_lang == 'ru' %}Материал{% else %}Material{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.material_en|default:product.material_ru }}{% elif site_lang == 'ru' %}{{ product.material_ru }}{% else %}{{ product.material_az|default:product.material_ru }}{% endif %}</strong></div>{% endif %}
+        {% if product.extra_details_az or product.extra_details_ru or product.extra_details_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Extra details{% elif site_lang == 'ru' %}Дополнительно{% else %}Əlavə detallar{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.extra_details_en|default:product.extra_details_ru }}{% elif site_lang == 'ru' %}{{ product.extra_details_ru }}{% else %}{{ product.extra_details_az|default:product.extra_details_ru }}{% endif %}</strong></div>{% endif %}
+        {% if product.length_az or product.length_ru or product.length_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Length{% elif site_lang == 'ru' %}Длина{% else %}Uzunluq{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.length_en|default:product.length_ru }}{% elif site_lang == 'ru' %}{{ product.length_ru }}{% else %}{{ product.length_az|default:product.length_ru }}{% endif %}</strong></div>{% endif %}
+        {% if product.care_az or product.care_ru or product.care_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Care{% elif site_lang == 'ru' %}Уход{% else %}Qulluq{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.care_en|default:product.care_ru }}{% elif site_lang == 'ru' %}{{ product.care_ru }}{% else %}{{ product.care_az|default:product.care_ru }}{% endif %}</strong></div>{% endif %}
+        <div class="product-spec-row"><span>{% if site_lang == 'en' %}Color{% elif site_lang == 'ru' %}Цвет{% else %}Rəng{% endif %}</span><strong>{% for color in product.colors.all %}{% if not forloop.first %}, {% endif %}{% if site_lang == 'en' %}{{ color.name_en }}{% elif site_lang == 'ru' %}{{ color.name_ru }}{% else %}{{ color.name_az|default:color.name_ru }}{% endif %}{% endfor %}</strong></div>
+        <div class="product-spec-row"><span>{% if site_lang == 'en' %}Size{% elif site_lang == 'ru' %}Размер{% else %}Ölçü{% endif %}</span><strong>{% for size in product_sizes %}{% if not forloop.first %}, {% endif %}{{ size }}{% endfor %}</strong></div>
+        {% if product.additional_note_az or product.additional_note_ru or product.additional_note_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Additional note{% elif site_lang == 'ru' %}Примечание{% else %}Əlavə qeyd{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.additional_note_en|default:product.additional_note_ru }}{% elif site_lang == 'ru' %}{{ product.additional_note_ru }}{% else %}{{ product.additional_note_az|default:product.additional_note_ru }}{% endif %}</strong></div>{% endif %}
+      </div>
+    </div>
   </div>
 
   <div class="product-info">
@@ -50,10 +65,6 @@
       </button>
     </div>
 
-    <p class="product-description">
-      {% if site_lang == 'en' %}{{ product.description_en }}{% elif site_lang == 'ru' %}{{ product.description_ru }}{% else %}{{ product.description_az|default:product.description_ru }}{% endif %}
-    </p>
-
     <div class="price-big product-price-stack">
       {% if product.is_rentable and product.rental_price %}
         <span>{{ product.rental_price }} ₼ <small>/ {% if site_lang == 'en' %}day{% elif site_lang == 'ru' %}день{% else %}gün{% endif %}</small></span>
@@ -64,15 +75,6 @@
       {% if product.product_type == 'custom' and product.custom_price %}
         <span>{{ ui.price_from }} {{ product.custom_price }} ₼</span>
       {% endif %}
-    </div>
-
-    <div class="product-specs">
-      <div class="product-specs__title">{% if site_lang == 'en' %}Product details{% elif site_lang == 'ru' %}Характеристики{% else %}Məhsul detalları{% endif %}</div>
-      {% if product.material_az or product.material_ru or product.material_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Material{% elif site_lang == 'ru' %}Материал{% else %}Material{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.material_en|default:product.material_ru }}{% elif site_lang == 'ru' %}{{ product.material_ru }}{% else %}{{ product.material_az|default:product.material_ru }}{% endif %}</strong></div>{% endif %}
-      {% if product.composition_az or product.composition_ru or product.composition_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Composition{% elif site_lang == 'ru' %}Состав{% else %}Tərkib{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.composition_en|default:product.composition_ru }}{% elif site_lang == 'ru' %}{{ product.composition_ru }}{% else %}{{ product.composition_az|default:product.composition_ru }}{% endif %}</strong></div>{% endif %}
-      {% if product.fit_az or product.fit_ru or product.fit_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Fit{% elif site_lang == 'ru' %}Посадка{% else %}Oturuş{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.fit_en|default:product.fit_ru }}{% elif site_lang == 'ru' %}{{ product.fit_ru }}{% else %}{{ product.fit_az|default:product.fit_ru }}{% endif %}</strong></div>{% endif %}
-      {% if product.length_az or product.length_ru or product.length_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Length{% elif site_lang == 'ru' %}Длина{% else %}Uzunluq{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.length_en|default:product.length_ru }}{% elif site_lang == 'ru' %}{{ product.length_ru }}{% else %}{{ product.length_az|default:product.length_ru }}{% endif %}</strong></div>{% endif %}
-      {% if product.care_az or product.care_ru or product.care_en %}<div class="product-spec-row"><span>{% if site_lang == 'en' %}Care{% elif site_lang == 'ru' %}Уход{% else %}Qulluq{% endif %}</span><strong>{% if site_lang == 'en' %}{{ product.care_en|default:product.care_ru }}{% elif site_lang == 'ru' %}{{ product.care_ru }}{% else %}{{ product.care_az|default:product.care_ru }}{% endif %}</strong></div>{% endif %}
     </div>
 
     <div class="product-option">

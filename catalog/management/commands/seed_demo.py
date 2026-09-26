@@ -19,21 +19,25 @@ class Command(BaseCommand):
     }
 
     PRODUCT_DETAILS = {
+        "brand": "JALUZINO COUTURE",
         "material_az": "Premium atelye parçası",
         "material_ru": "Премиальная ткань ателье",
         "material_en": "Premium atelier fabric",
         "composition_az": "Dəqiq tərkib məhsul etiketinə uyğun göstərilir",
         "composition_ru": "Точный состав указывается по ярлыку изделия",
         "composition_en": "Exact composition follows the garment label",
-        "fit_az": "Siluet və oturuş modeldən asılıdır",
-        "fit_ru": "Силуэт и посадка зависят от модели",
-        "fit_en": "Silhouette and fit depend on the design",
         "length_az": "Uzunluq modeldən asılıdır və fitting zamanı dəqiqləşdirilir",
         "length_ru": "Длина зависит от модели и уточняется на примерке",
         "length_en": "Length varies by design and is confirmed at fitting",
         "care_az": "Peşəkar quru təmizləmə tövsiyə olunur",
         "care_ru": "Рекомендуется профессиональная химчистка",
         "care_en": "Professional dry cleaning is recommended",
+        "extra_details_az": "Fitting zamanı ölçü, kirayə müddəti və aksesuar uyğunluğu birlikdə dəqiqləşdirilir.",
+        "extra_details_ru": "На примерке уточняются размер, срок аренды и сочетание с аксессуарами.",
+        "extra_details_en": "Sizing, rental duration and accessory pairing are confirmed at fitting.",
+        "additional_note_az": "Bron sorğusunda tədbir tarixini və istədiyiniz fitting vaxtını qeyd edə bilərsiniz.",
+        "additional_note_ru": "В заявке можно указать дату события и желаемое время примерки.",
+        "additional_note_en": "You can note the event date and preferred fitting time in the booking request.",
     }
 
     REAL_DRESSES = [

@@ -45,12 +45,24 @@ class Product(models.Model):
     READY = "ready"
     CUSTOM = "custom"
     PRODUCT_TYPES = [(RENTAL, "Аренда"), (READY, "Готовое изделие"), (CUSTOM, "Индивидуальный пошив")]
+    SOURCE_COUTURE = "couture"
+    SOURCE_USER = "user"
+    SOURCE_CHOICES = [(SOURCE_COUTURE, "Couture"), (SOURCE_USER, "Пользователь")]
+    MODERATION_PENDING = "pending"
+    MODERATION_APPROVED = "approved"
+    MODERATION_REJECTED = "rejected"
+    MODERATION_CHOICES = [(MODERATION_PENDING, "На модерации"), (MODERATION_APPROVED, "Одобрено"), (MODERATION_REJECTED, "Отклонено")]
 
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_products")
+    source = models.CharField(max_length=12, choices=SOURCE_CHOICES, default=SOURCE_COUTURE)
+    moderation_status = models.CharField(max_length=12, choices=MODERATION_CHOICES, default=MODERATION_APPROVED)
+    moderation_note = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     slug = models.SlugField(unique=True)
     name_az = models.CharField(max_length=180, blank=True)
     name_ru = models.CharField(max_length=180)
     name_en = models.CharField(max_length=180)
+    brand = models.CharField(max_length=160, blank=True, default="JALUZINO COUTURE")
     description_az = models.TextField(blank=True)
     description_ru = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
@@ -69,6 +81,12 @@ class Product(models.Model):
     care_az = models.CharField(max_length=220, blank=True)
     care_ru = models.CharField(max_length=220, blank=True)
     care_en = models.CharField(max_length=220, blank=True)
+    extra_details_az = models.TextField(blank=True)
+    extra_details_ru = models.TextField(blank=True)
+    extra_details_en = models.TextField(blank=True)
+    additional_note_az = models.TextField(blank=True)
+    additional_note_ru = models.TextField(blank=True)
+    additional_note_en = models.TextField(blank=True)
     product_type = models.CharField(max_length=12, choices=PRODUCT_TYPES, default=RENTAL)
     is_rentable = models.BooleanField(default=True)
     is_purchasable = models.BooleanField(default=False)
@@ -224,7 +242,7 @@ class ContactMessage(models.Model):
 
 
 class SiteSettings(models.Model):
-    brand_name = models.CharField(max_length=120, default="JALUZINO COUTURE")
+    brand_name = models.CharField(max_length=120, default="JALIZINO COUTURE")
     contact_email = models.EmailField(blank=True, default="atelier@example.com")
     contact_phone = models.CharField(max_length=60, blank=True, default="+994 00 000 00 00")
     location_az = models.CharField(max_length=220, blank=True, default="Bakı · öncədən görüşlə")

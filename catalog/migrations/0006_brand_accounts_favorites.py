@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name="SiteSettings",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("brand_name", models.CharField(default="JALUZINO COUTURE", max_length=120)),
+                ("brand_name", models.CharField(default="JALIZINO COUTURE", max_length=120)),
                 ("contact_email", models.EmailField(blank=True, default="atelier@example.com", max_length=254)),
                 ("contact_phone", models.CharField(blank=True, default="+994 00 000 00 00", max_length=60)),
                 ("location_az", models.CharField(blank=True, default="Bakı · öncədən görüşlə", max_length=220)),

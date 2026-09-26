@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{{ seo_title }}{% endblock %}
+{% block content %}
+<section class="section listing-submit">
+  <div class="listing-submit__head">
+    <div class="eyebrow">JALIZINO COUTURE / MARKET</div>
+    <h1>{% if site_lang == 'en' %}Add listing{% elif site_lang == 'ru' %}Добавить объявление{% else %}Elan əlavə et{% endif %}</h1>
+    <p>{% if site_lang == 'en' %}The dress will appear on the site after moderation.{% elif site_lang == 'ru' %}Платье появится на сайте после модерации.{% else %}Don moderasiyadan sonra saytda görünəcək.{% endif %}</p>
+  </div>
+
+  <form class="listing-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="account-errors">{{ form.non_field_errors }}</div>{% endif %}
+
+    <div class="listing-form__grid">
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Listing type{% elif site_lang == 'ru' %}Тип объявления{% else %}Elan tipi{% endif %}</span>{{ form.listing_type }}{% for error in form.listing_type.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{{ ui.category }}</span>{{ form.category }}{% for error in form.category.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Dress name{% elif site_lang == 'ru' %}Название платья{% else %}Donun adı{% endif %}</span>{{ form.name }}{% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>Brand</span>{{ form.brand }}{% for error in form.brand.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{{ ui.sizes }}</span>{{ form.sizes }}{% for error in form.sizes.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{{ ui.colors }}</span>{{ form.colors }}{% for error in form.colors.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Rental price / day{% elif site_lang == 'ru' %}Аренда / день{% else %}Kirayə / gün{% endif %}</span>{{ form.rental_price }}{% for error in form.rental_price.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Sale price{% elif site_lang == 'ru' %}Цена продажи{% else %}Satış qiyməti{% endif %}</span>{{ form.sale_price }}{% for error in form.sale_price.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Minimum rental days{% elif site_lang == 'ru' %}Минимум дней аренды{% else %}Minimum kirayə günü{% endif %}</span>{{ form.min_rental_days }}{% for error in form.min_rental_days.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>Material</span>{{ form.material }}{% for error in form.material.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Length{% elif site_lang == 'ru' %}Длина{% else %}Uzunluq{% endif %}</span>{{ form.length }}{% for error in form.length.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="luxury-field"><span>{% if site_lang == 'en' %}Care{% elif site_lang == 'ru' %}Уход{% else %}Qulluq{% endif %}</span>{{ form.care }}{% for error in form.care.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    </div>
+
+    <label class="luxury-field luxury-field--message"><span>{{ ui.message }}</span>{{ form.description }}{% for error in form.description.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <label class="luxury-field luxury-field--message"><span>{% if site_lang == 'en' %}Extra details{% elif site_lang == 'ru' %}Дополнительно{% else %}Əlavə detallar{% endif %}</span>{{ form.extra_details }}{% for error in form.extra_details.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <label class="luxury-field luxury-field--message"><span>{% if site_lang == 'en' %}Additional note{% elif site_lang == 'ru' %}Примечание{% else %}Əlavə qeyd{% endif %}</span>{{ form.additional_note }}{% for error in form.additional_note.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+
+    <div class="listing-upload-grid">
+      <label class="listing-upload"><span>{% if site_lang == 'en' %}Photos{% elif site_lang == 'ru' %}Фото{% else %}Fotolar{% endif %}</span>{{ form.images }}{% for error in form.images.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="listing-upload"><span>Video</span>{{ form.videos }}{% for error in form.videos.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    </div>
+
+    <button class="btn-dark luxury-submit" type="submit">{% if site_lang == 'en' %}Send to moderation{% elif site_lang == 'ru' %}Отправить на модерацию{% else %}Moderasiyaya göndər{% endif %} <span>→</span></button>
+  </form>
+</section>
+{% endblock %}

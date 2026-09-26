@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import ContactMessage, Reservation
+from .models import Category, Color, ContactMessage, Product, ProductImage, ProductVideo, Reservation
 
 
 User = get_user_model()
@@ -19,6 +19,65 @@ class ReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
         fields = ["customer_name", "email", "phone", "start_date", "end_date", "color", "size", "notes"]
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput)
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        if not data and self.required:
+            raise forms.ValidationError(self.error_messages["required"], code="required")
+        if not data:
+            return []
+        files = data if isinstance(data, (list, tuple)) else [data]
+        return [super(MultipleFileField, self).clean(file_item, initial) for file_item in files]
+
+
+class ProductSubmissionForm(forms.Form):
+    LISTING_RENTAL = "rental"
+    LISTING_SALE = "sale"
+    LISTING_BOTH = "both"
+    LISTING_CHOICES = [(LISTING_RENTAL, "Kirayə"), (LISTING_SALE, "Satış"), (LISTING_BOTH, "Satış və kirayə")]
+
+    listing_type = forms.ChoiceField(choices=LISTING_CHOICES)
+    category = forms.ModelChoiceField(queryset=Category.objects.none())
+    name = forms.CharField(max_length=180)
+    brand = forms.CharField(max_length=160, required=False)
+    description = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}))
+    material = forms.CharField(max_length=180, required=False)
+    length = forms.CharField(max_length=180, required=False)
+    care = forms.CharField(max_length=220, required=False)
+    extra_details = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    additional_note = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    sizes = forms.CharField(max_length=120, help_text="Məsələn: XS, S, M, L")
+    colors = forms.ModelMultipleChoiceField(queryset=Color.objects.none(), required=False)
+    rental_price = forms.DecimalField(max_digits=10, decimal_places=2, min_value=0, required=False)
+    sale_price = forms.DecimalField(max_digits=10, decimal_places=2, min_value=0, required=False)
+    min_rental_days = forms.IntegerField(min_value=3, max_value=60, initial=3, required=False)
+    images = MultipleFileField(required=True)
+    videos = MultipleFileField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.all()
+        self.fields["colors"].queryset = Color.objects.all()
+
+    def clean(self):
+        cleaned = super().clean()
+        listing_type = cleaned.get("listing_type")
+        rental_price = cleaned.get("rental_price")
+        sale_price = cleaned.get("sale_price")
+        if listing_type in {self.LISTING_RENTAL, self.LISTING_BOTH} and rental_price is None:
+            self.add_error("rental_price", "Kirayə qiymətini qeyd edin.")
+        if listing_type in {self.LISTING_SALE, self.LISTING_BOTH} and sale_price is None:
+            self.add_error("sale_price", "Satış qiymətini qeyd edin.")
+        return cleaned
 
 
 class EmailLoginForm(forms.Form):

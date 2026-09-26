@@ -4,7 +4,7 @@
 <section class="section account-dashboard">
   <div class="account-dashboard__head">
     <div>
-      <div class="eyebrow">JALUZINO COUTURE / ACCOUNT</div>
+      <div class="eyebrow">JALIZINO COUTURE / ACCOUNT</div>
       <h1>{% if site_lang == 'en' %}My account{% elif site_lang == 'ru' %}Мой аккаунт{% else %}Hesabım{% endif %}</h1>
       <p>{% if site_lang == 'en' %}Manage your saved pieces and account details.{% elif site_lang == 'ru' %}Здесь находятся данные аккаунта и сохранённые изделия.{% else %}Hesab məlumatlarınızı və seçilmiş geyimləri buradan idarə edin.{% endif %}</p>
     </div>
@@ -22,10 +22,26 @@
           <span>{% if site_lang == 'en' %}Wishlist{% elif site_lang == 'ru' %}Избранное{% else %}Seçilmişlər{% endif %}</span>
           <span class="account-dashboard__count">{{ favorite_count }}</span>
         </a>
+        <a class="account-dashboard__link" href="{% url 'product_submit' %}"><span>{{ ui.add_listing }}</span><span>→</span></a>
         <a class="account-dashboard__link" href="{% url 'catalog' %}"><span>{{ ui.catalog }}</span><span>→</span></a>
         <form class="account-dashboard__logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="account-dashboard__logout" type="submit"><span>{% if site_lang == 'en' %}Sign out{% elif site_lang == 'ru' %}Выйти{% else %}Çıxış{% endif %}</span><span>→</span></button></form>
       </div>
     </div>
+  </div>
+  <div class="account-listings">
+    <div class="account-dashboard__label">{% if site_lang == 'en' %}My listings{% elif site_lang == 'ru' %}Мои объявления{% else %}Mənim elanlarım{% endif %}</div>
+    {% if submitted_products %}
+      <div class="account-listings__rows">
+        {% for product in submitted_products %}
+          <div class="account-listing-row">
+            <span>{{ product.name_az|default:product.name_ru }}</span>
+            <strong>{{ product.get_moderation_status_display }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="account-listings__empty">{% if site_lang == 'en' %}You have not submitted any dresses yet.{% elif site_lang == 'ru' %}Вы ещё не добавляли платья.{% else %}Hələ heç bir don əlavə etməmisiniz.{% endif %}</p>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

@@ -26,7 +26,7 @@ def global_site_context(request):
     base_url = settings.SITE_URL.rstrip("/")
     canonical_url = f"{base_url}{request.path}"
     og_locale = {"az": "az_AZ", "ru": "ru_RU", "en": "en_US"}[lang]
-    site_name = site.brand_name if site and site.brand_name else "JALUZINO COUTURE"
+    site_name = site.brand_name if site and site.brand_name else "JALIZINO COUTURE"
     contact_email = site.contact_email if site and site.contact_email else settings.CONTACT_EMAIL
     contact_phone = site.contact_phone if site and site.contact_phone else settings.CONTACT_PHONE
     contact_location = site.localized_location(lang) if site else settings.CONTACT_LOCATION

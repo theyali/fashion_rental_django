@@ -4,7 +4,7 @@
 <section class="catalog-hero">
   <div class="eyebrow">THE WARDROBE / 2026</div>
   <div class="catalog-hero__row">
-    <h1>{{ ui.catalog }}</h1>
+    <h1>{% if catalog_section == 'couture' %}Couture{% elif catalog_section == 'sale' %}{{ ui.sale }}{% elif catalog_section == 'rental' %}{{ ui.market_rental }}{% else %}{{ ui.catalog }}{% endif %}</h1>
     <p>
       {% if site_lang == 'en' %}Rental pieces, ready-made looks and made-to-order silhouettes in one curated wardrobe.
       {% elif site_lang == 'ru' %}Аренда, готовые образы и индивидуальный пошив в одной тщательно собранной коллекции.
@@ -15,14 +15,14 @@
 
 <section class="catalog-controls section">
   <div class="type-tabs" aria-label="Catalog type">
-    <a class="type-tab {% if not active_type %}active{% endif %}" href="{% url 'catalog' %}">{{ ui.all }}</a>
-    <a class="type-tab {% if active_type == 'rental' %}active{% endif %}" href="{% url 'catalog' %}?type=rental">{{ ui.rental }}</a>
-    <a class="type-tab {% if active_type == 'ready' %}active{% endif %}" href="{% url 'catalog' %}?type=ready">{{ ui.ready_made }}</a>
-    <a class="type-tab {% if active_type == 'custom' %}active{% endif %}" href="{% url 'catalog' %}?type=custom">{{ ui.made_to_order }}</a>
+    <a class="type-tab {% if catalog_section == 'couture' %}active{% endif %}" href="{% url 'catalog_couture' %}">{{ ui.couture }}</a>
+    <a class="type-tab {% if catalog_section == 'sale' %}active{% endif %}" href="{% url 'catalog_sale' %}">{{ ui.sale }}</a>
+    <a class="type-tab {% if catalog_section == 'rental' %}active{% endif %}" href="{% url 'catalog_rental' %}">{{ ui.market_rental }}</a>
   </div>
 
   <form class="filter-panel" method="get">
     {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
+    {% if active_query %}<input type="hidden" name="q" value="{{ active_query }}">{% endif %}
     <label class="filter-field">
       <span>{{ ui.category }}</span>
       <select name="category">
@@ -68,12 +68,12 @@
     </label>
     <div class="filter-actions">
       <button class="filter-submit" type="submit">{{ ui.apply_filters }}</button>
-      <a href="{% url 'catalog' %}">{{ ui.clear_filters }}</a>
+      <a href="{% if catalog_section == 'couture' %}{% url 'catalog_couture' %}{% elif catalog_section == 'sale' %}{% url 'catalog_sale' %}{% elif catalog_section == 'rental' %}{% url 'catalog_rental' %}{% else %}{% url 'catalog' %}{% endif %}">{{ ui.clear_filters }}</a>
     </div>
   </form>
 
   <div class="catalog-summary">
-    <span>{{ result_count }} {{ ui.results }}</span>
+    <span>{% if active_query %}{{ ui.search }}: “{{ active_query }}” · {% endif %}{{ result_count }} {{ ui.results }}</span>
     <span class="catalog-summary__line"></span>
   </div>
 </section>
@@ -85,7 +85,7 @@
     <div class="catalog-empty">
       <div class="eyebrow">NO RESULTS</div>
       <h2>{{ ui.empty_catalog }}</h2>
-      <a class="text-link" href="{% url 'catalog' %}">{{ ui.clear_filters }} →</a>
+      <a class="text-link" href="{% if catalog_section == 'couture' %}{% url 'catalog_couture' %}{% elif catalog_section == 'sale' %}{% url 'catalog_sale' %}{% elif catalog_section == 'rental' %}{% url 'catalog_rental' %}{% else %}{% url 'catalog' %}{% endif %}">{{ ui.clear_filters }} →</a>
     </div>
   {% endfor %}
 </section>

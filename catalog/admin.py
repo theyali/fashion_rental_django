@@ -17,19 +17,31 @@ class ProductVideoInline(admin.TabularInline):
     ordering = ("color", "sort_order")
 
 
+@admin.action(description="Одобрить объявления")
+def approve_products(modeladmin, request, queryset):
+    queryset.update(moderation_status=Product.MODERATION_APPROVED, is_active=True)
+
+
+@admin.action(description="Отклонить объявления")
+def reject_products(modeladmin, request, queryset):
+    queryset.update(moderation_status=Product.MODERATION_REJECTED, is_active=False)
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name_az", "category", "product_type", "is_rentable", "is_purchasable", "rental_price", "sale_price", "is_featured", "is_active")
-    list_filter = ("product_type", "is_rentable", "is_purchasable", "is_featured", "is_active", "category", "colors")
-    search_fields = ("name_az", "name_ru", "name_en", "slug")
+    list_display = ("name_az", "brand", "source", "moderation_status", "owner", "category", "is_rentable", "is_purchasable", "rental_price", "sale_price", "is_active")
+    list_filter = ("source", "moderation_status", "product_type", "is_rentable", "is_purchasable", "is_featured", "is_active", "category", "colors")
+    search_fields = ("name_az", "name_ru", "name_en", "brand", "slug", "owner__email", "owner__username")
+    list_select_related = ("category", "owner")
     prepopulated_fields = {"slug": ("name_en",)}
     filter_horizontal = ("colors",)
     inlines = [ProductImageInline, ProductVideoInline]
+    actions = [approve_products, reject_products]
     fieldsets = (
-        ("Основное", {"fields": ("category", "slug", "product_type", "is_rentable", "is_purchasable", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
-        ("AZ", {"fields": ("name_az", "description_az", "material_az", "composition_az", "fit_az", "length_az", "care_az")}),
-        ("RU", {"fields": ("name_ru", "description_ru", "material_ru", "composition_ru", "fit_ru", "length_ru", "care_ru")}),
-        ("EN", {"fields": ("name_en", "description_en", "material_en", "composition_en", "fit_en", "length_en", "care_en")}),
+        ("Основное", {"fields": ("owner", "source", "moderation_status", "moderation_note", "category", "slug", "brand", "product_type", "is_rentable", "is_purchasable", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
+        ("AZ", {"fields": ("name_az", "description_az", "material_az", "composition_az", "extra_details_az", "length_az", "care_az", "additional_note_az")}),
+        ("RU", {"fields": ("name_ru", "description_ru", "material_ru", "composition_ru", "extra_details_ru", "length_ru", "care_ru", "additional_note_ru")}),
+        ("EN", {"fields": ("name_en", "description_en", "material_en", "composition_en", "extra_details_en", "length_en", "care_en", "additional_note_en")}),
         ("Цены", {"fields": ("rental_price", "sale_price", "custom_price", "min_rental_days"), "description": "Для аренды rental_price — цена за один календарный день."}),
     )
 

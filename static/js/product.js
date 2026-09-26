@@ -5,9 +5,9 @@
   const locale = {az: 'az-AZ', en: 'en-US', ru: 'ru-RU'}[lang];
 
   const text = {
-    az: {selectDates:'Tarixləri seçin',chooseColor:'Əvvəl rəng seçin.',chooseSize:'Əvvəl ölçü seçin.',choosePeriod:'Əvvəl tarix aralığını seçin.',unavailable:'Seçilmiş tarix aralığında artıq bron olunmuş gün var.',invalid:'Bron yaratmaq mümkün olmadı. Məlumatları yoxlayın.',sent:'Sorğunuz qəbul edildi. Təsdiqdən sonra bron qüvvəyə minəcək.',code:'Bron kodu',days:'gün',day:'gün',total:'Ümumi',loading:'Mövcud tarixlər yoxlanılır…',minDays:'Minimum kirayə müddəti {days} gündür.'},
-    en: {selectDates:'Select dates',chooseColor:'Choose a color first.',chooseSize:'Choose a size first.',choosePeriod:'Select a date range first.',unavailable:'The selected range contains unavailable dates.',invalid:'Could not create the booking. Check the details.',sent:'Request received. The booking becomes active after confirmation.',code:'Booking code',days:'days',day:'day',total:'Total',loading:'Checking availability…',minDays:'Minimum rental is {days} days.'},
-    ru: {selectDates:'Выберите даты',chooseColor:'Сначала выберите цвет.',chooseSize:'Сначала выберите размер.',choosePeriod:'Сначала выберите период.',unavailable:'В выбранном периоде уже есть занятые даты.',invalid:'Не удалось создать бронь. Проверьте данные.',sent:'Заявка принята. Бронь вступит в силу после подтверждения.',code:'Код брони',days:'дн.',day:'день',total:'Итого',loading:'Проверяем свободные даты…',minDays:'Минимальная аренда — {days} дня.'}
+    az: {selectDates:'Tarixləri seçin',chooseColor:'Əvvəl rəng seçin.',chooseSize:'Əvvəl ölçü seçin.',choosePeriod:'Əvvəl tarix aralığını seçin.',unavailable:'Seçilmiş tarix aralığında artıq bron olunmuş gün var.',invalid:'Bron yaratmaq mümkün olmadı. Məlumatları yoxlayın.',sent:'Sorğunuz qəbul edildi. Təsdiqdən sonra bron qüvvəyə minəcək.',code:'Bron kodu',days:'gün',day:'gün',total:'Ümumi',loading:'Mövcud tarixlər yoxlanılır…',minDays:'Minimum kirayə müddəti {days} gündür.',minEndDay:'Bu tarix minimum {days} günlük kirayə üçün çox yaxındır.',bookedDay:'Bu tarix artıq bron olunub.',pastDay:'Keçmiş tarix seçilə bilməz.'},
+    en: {selectDates:'Select dates',chooseColor:'Choose a color first.',chooseSize:'Choose a size first.',choosePeriod:'Select a date range first.',unavailable:'The selected range contains unavailable dates.',invalid:'Could not create the booking. Check the details.',sent:'Request received. The booking becomes active after confirmation.',code:'Booking code',days:'days',day:'day',total:'Total',loading:'Checking availability…',minDays:'Minimum rental is {days} days.',minEndDay:'This date is too close for the {days}-day minimum rental.',bookedDay:'This date is already booked.',pastDay:'Past dates cannot be selected.'},
+    ru: {selectDates:'Выберите даты',chooseColor:'Сначала выберите цвет.',chooseSize:'Сначала выберите размер.',choosePeriod:'Сначала выберите период.',unavailable:'В выбранном периоде уже есть занятые даты.',invalid:'Не удалось создать бронь. Проверьте данные.',sent:'Заявка принята. Бронь вступит в силу после подтверждения.',code:'Код брони',days:'дн.',day:'день',total:'Итого',loading:'Проверяем свободные даты…',minDays:'Минимальная аренда — {days} дня.',minEndDay:'Эта дата слишком близко для минимальной аренды {days} дня.',bookedDay:'Эта дата уже занята.',pastDay:'Прошедшую дату выбрать нельзя.'}
   }[lang];
 
   let mediaByColor = {};
@@ -23,9 +23,16 @@
 
   function firstMediaBucket() { return Object.values(mediaByColor).find(bucket => (bucket.photos || []).length || (bucket.videos || []).length) || {photos: [], videos: []}; }
   function bucketForColor(colorId) { return mediaByColor[String(colorId)] || mediaByColor.default || firstMediaBucket(); }
+  function updateMediaModeSwitch() {
+    const hasVideos = activeMedia.videos.length > 0;
+    $('.media-mode-switch').prop('hidden', !hasVideos);
+    $('.media-mode-btn[data-media-mode="videos"]').prop('hidden', !hasVideos);
+    if (!hasVideos && mediaMode === 'videos') mediaMode = 'photos';
+  }
   function setMediaForColor(colorId) {
     const bucket = bucketForColor(colorId);
     activeMedia = {photos: Array.isArray(bucket.photos) ? bucket.photos : [], videos: Array.isArray(bucket.videos) ? bucket.videos : []};
+    updateMediaModeSwitch();
     photoIndex = 0; renderMedia();
   }
   function setMediaMode(mode) { mediaMode = mode === 'videos' ? 'videos' : 'photos'; renderMedia(); }
@@ -45,7 +52,6 @@
   }
   function renderPhotos() {
     const photos = activeMedia.photos; const photo = photos[photoIndex] || null; setViewerImage(photo ? photo.url : coverUrl);
-    $('#videoUnavailable').prop('hidden', true);
     $('#mediaPrev, #mediaNext').prop('hidden', photos.length <= 1);
     $('#mediaCounter').prop('hidden', photos.length <= 1).text(photos.length ? `${photoIndex + 1} / ${photos.length}` : '');
     viewer.removeClass('is-video').addClass('is-photo'); renderThumbs();
@@ -54,15 +60,15 @@
     const videos = activeMedia.videos;
     $('#mediaPrev, #mediaNext, #mediaCounter, #galleryThumbs').prop('hidden', true); viewer.removeClass('is-photo').addClass('is-video');
     if (!videos.length) {
-      const fallbackPhoto = activeMedia.photos[photoIndex] || activeMedia.photos[0]; setViewerImage(fallbackPhoto ? fallbackPhoto.url : coverUrl);
-      $('#videoUnavailable').prop('hidden', false); return;
+      mediaMode = 'photos';
+      renderPhotos();
+      return;
     }
     const video = videos[0];
     $('#viewerImage').prop('hidden', true);
-    $('#videoUnavailable').prop('hidden', true);
     $('#viewerVideo').attr('src', video.url).attr('poster', video.poster || coverUrl || '').prop('hidden', false);
   }
-  function renderMedia() { $('.media-mode-btn').removeClass('active'); $(`.media-mode-btn[data-media-mode="${mediaMode}"]`).addClass('active'); if (mediaMode === 'videos') renderVideos(); else renderPhotos(); }
+  function renderMedia() { updateMediaModeSwitch(); $('.media-mode-btn').removeClass('active'); $(`.media-mode-btn[data-media-mode="${mediaMode}"]`).addClass('active'); if (mediaMode === 'videos') renderVideos(); else renderPhotos(); }
 
   $('.media-mode-btn').on('click', function () { setMediaMode($(this).data('media-mode')); });
   $('#mediaPrev').on('click', function () { if (activeMedia.photos.length <= 1) return; photoIndex = (photoIndex - 1 + activeMedia.photos.length) % activeMedia.photos.length; renderMedia(); });
@@ -83,6 +89,8 @@
   function inSelected(dateObject) { if (!start) return false; const timestamp=dateObject.getTime(); if (!end) return timestamp===start.getTime(); return timestamp>=start.getTime() && timestamp<=end.getTime(); }
   function rangeHasBlocked(firstDate,lastDate) { const cursor=new Date(firstDate); while(cursor<=lastDate){ if(isBlocked(cursor)) return true; cursor.setDate(cursor.getDate()+1);} return false; }
   function selectedDays() { if(!start||!end) return 0; return Math.floor((end.getTime()-start.getTime())/86400000)+1; }
+  function daysBetween(firstDate,lastDate) { return Math.floor((lastDate.getTime()-firstDate.getTime())/86400000)+1; }
+  function isTooShortEndDate(dateObject) { return !!(start && !end && dateObject > start && daysBetween(start,dateObject) < minRentalDays); }
   function resetRange() { start=null; end=null; $('#startDate, #endDate').val(''); updateSummary(); }
 
   function updateSummary() {
@@ -92,7 +100,7 @@
     }
     $('#startDate').val(iso(start)); $('#endDate').val(end ? iso(end) : '');
     if (!end) {
-      $('#dateSummary').html(`<div class="date-summary__dates"><span>${formatDate(start)}</span><b>→</b><span>…</span></div><div class="rental-price-calc">${rate}<strong>—</strong></div>`); return;
+      $('#dateSummary').html(`<div class="date-summary__dates"><span>${formatDate(start)}</span><b>→</b><span>…</span><em>${text.minDays.replace('{days}',minRentalDays)}</em></div><div class="rental-price-calc">${rate}<strong>—</strong></div>`); return;
     }
     const days=selectedDays(); const total=dailyPrice*days;
     $('#dateSummary').html(`<div class="date-summary__dates"><span>${formatDate(start)}</span><b>→</b><span>${formatDate(end)}</span><em>${days} ${text.days}</em></div><div class="rental-price-calc"><span>${formatMoney(dailyPrice)} × ${days} ${text.days}</span><strong>${formatMoney(total)}</strong></div>`);
@@ -106,7 +114,8 @@
     const totalDays=new Date(calDate.getFullYear(),calDate.getMonth()+1,0).getDate(); const today=new Date(); today.setHours(0,0,0,0);
     for(let day=1;day<=totalDays;day+=1){
       const dateObject=new Date(calDate.getFullYear(),calDate.getMonth(),day); const past=dateObject<today; const blocked=isBlocked(dateObject); const button=$('<button type="button" class="cal-day"></button>').text(day).attr('data-date',iso(dateObject));
-      if(past) button.prop('disabled',true).addClass('past'); else if(blocked) button.prop('disabled',true).addClass('blocked'); else button.addClass('free');
+      const tooShortEnd = isTooShortEndDate(dateObject);
+      if(past) button.prop('disabled',true).addClass('past').attr({'title':text.pastDay,'aria-label':`${day}. ${text.pastDay}`}); else if(blocked) button.prop('disabled',true).addClass('blocked').attr({'title':text.bookedDay,'aria-label':`${day}. ${text.bookedDay}`}); else if(tooShortEnd) button.prop('disabled',true).addClass('min-range').attr({'title':text.minEndDay.replace('{days}',minRentalDays),'aria-label':`${day}. ${text.minEndDay.replace('{days}',minRentalDays)}`}); else button.addClass('free').attr('aria-label',String(day));
       if(inSelected(dateObject)) button.addClass('selected'); if(dateObject.getTime()===today.getTime()) button.addClass('today'); grid.append(button);
     }
     const thisMonth=new Date(); thisMonth.setDate(1); thisMonth.setHours(0,0,0,0); $('#calPrev').prop('disabled',currentMonthKey(calDate)<=currentMonthKey(thisMonth));
