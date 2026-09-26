@@ -18,8 +18,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ["sort_order", "name_ru"]
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name_az or self.name_ru
@@ -33,8 +33,8 @@ class Color(models.Model):
 
     class Meta:
         ordering = ["name_ru"]
-        verbose_name = "Цвет"
-        verbose_name_plural = "Цвета"
+        verbose_name = "Color"
+        verbose_name_plural = "Colors"
 
     def __str__(self):
         return self.name_az or self.name_ru
@@ -44,14 +44,14 @@ class Product(models.Model):
     RENTAL = "rental"
     READY = "ready"
     CUSTOM = "custom"
-    PRODUCT_TYPES = [(RENTAL, "Аренда"), (READY, "Готовое изделие"), (CUSTOM, "Индивидуальный пошив")]
+    PRODUCT_TYPES = [(RENTAL, "Rental"), (READY, "Ready to wear"), (CUSTOM, "Made to order")]
     SOURCE_COUTURE = "couture"
     SOURCE_USER = "user"
-    SOURCE_CHOICES = [(SOURCE_COUTURE, "Couture"), (SOURCE_USER, "Пользователь")]
+    SOURCE_CHOICES = [(SOURCE_COUTURE, "Couture"), (SOURCE_USER, "Customer")]
     MODERATION_PENDING = "pending"
     MODERATION_APPROVED = "approved"
     MODERATION_REJECTED = "rejected"
-    MODERATION_CHOICES = [(MODERATION_PENDING, "На модерации"), (MODERATION_APPROVED, "Одобрено"), (MODERATION_REJECTED, "Отклонено")]
+    MODERATION_CHOICES = [(MODERATION_PENDING, "Pending moderation"), (MODERATION_APPROVED, "Approved"), (MODERATION_REJECTED, "Rejected")]
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_products")
     source = models.CharField(max_length=12, choices=SOURCE_CHOICES, default=SOURCE_COUTURE)
@@ -91,7 +91,7 @@ class Product(models.Model):
     is_rentable = models.BooleanField(default=True)
     is_purchasable = models.BooleanField(default=False)
     min_rental_days = models.PositiveSmallIntegerField(default=3)
-    rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Цена аренды за 1 календарный день.")
+    rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Rental price per calendar day.")
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     custom_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     sizes = models.CharField(max_length=120, default="XS, S, M, L")
@@ -103,8 +103,8 @@ class Product(models.Model):
 
     class Meta:
         ordering = ["-is_featured", "-id"]
-        verbose_name = "Изделие"
-        verbose_name_plural = "Изделия"
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
 
     def __str__(self):
         return self.name_az or self.name_ru
@@ -115,18 +115,18 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     GALLERY = "gallery"
-    IMAGE_TYPES = [(GALLERY, "Фото галереи")]
+    IMAGE_TYPES = [(GALLERY, "Gallery photo")]
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_images")
     image = models.ImageField(upload_to="products/media/")
     image_type = models.CharField(max_length=12, choices=IMAGE_TYPES, default=GALLERY)
-    angle = models.PositiveSmallIntegerField(default=0, help_text="Не используется для обычной галереи.")
+    angle = models.PositiveSmallIntegerField(default=0, help_text="Not used for the regular gallery.")
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["image_type", "color_id", "sort_order", "angle", "id"]
-        verbose_name = "Фото изделия"
-        verbose_name_plural = "Фото изделий"
+        verbose_name = "Product photo"
+        verbose_name_plural = "Product photos"
 
     def __str__(self):
         return f"{self.product} — фото"
@@ -141,8 +141,8 @@ class ProductVideo(models.Model):
 
     class Meta:
         ordering = ["color_id", "sort_order", "id"]
-        verbose_name = "Видео изделия"
-        verbose_name_plural = "Видео изделий"
+        verbose_name = "Product video"
+        verbose_name_plural = "Product videos"
 
     def __str__(self):
         return f"{self.product} — видео"
@@ -152,7 +152,7 @@ class Reservation(models.Model):
     PENDING = "pending"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
-    STATUSES = [(PENDING, "Ожидает подтверждения"), (CONFIRMED, "Подтверждено"), (CANCELLED, "Отменено")]
+    STATUSES = [(PENDING, "Pending confirmation"), (CONFIRMED, "Confirmed"), (CANCELLED, "Cancelled")]
     booking_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reservations")
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True)
@@ -171,8 +171,8 @@ class Reservation(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "Бронирование"
-        verbose_name_plural = "Бронирования"
+        verbose_name = "Reservation"
+        verbose_name_plural = "Reservations"
 
     @property
     def short_code(self):
@@ -234,8 +234,8 @@ class ContactMessage(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "Сообщение"
-        verbose_name_plural = "Сообщения"
+        verbose_name = "Contact message"
+        verbose_name_plural = "Contact messages"
 
     def __str__(self):
         return f"{self.name}: {self.email}"
@@ -248,7 +248,7 @@ class SiteSettings(models.Model):
     location_az = models.CharField(max_length=220, blank=True, default="Bakı · öncədən görüşlə")
     location_ru = models.CharField(max_length=220, blank=True, default="Баку · по предварительной записи")
     location_en = models.CharField(max_length=220, blank=True, default="Baku · by appointment")
-    whatsapp_phone = models.CharField(max_length=60, blank=True, help_text="Например: +994501234567. Если пусто — WhatsApp-кнопка скрыта.")
+    whatsapp_phone = models.CharField(max_length=60, blank=True, help_text="Example: +994501234567. Leave empty to hide the WhatsApp button.")
     whatsapp_label_az = models.CharField(max_length=100, blank=True, default="İndi bizə yazın")
     whatsapp_label_ru = models.CharField(max_length=100, blank=True, default="Напишите нам")
     whatsapp_label_en = models.CharField(max_length=100, blank=True, default="Ask something now")
@@ -263,8 +263,8 @@ class SiteSettings(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Настройки сайта"
-        verbose_name_plural = "Настройки сайта"
+        verbose_name = "Site settings"
+        verbose_name_plural = "Site settings"
 
     def save(self, *args, **kwargs):
         self.pk = 1
@@ -303,8 +303,8 @@ class Favorite(models.Model):
     class Meta:
         ordering = ["-created_at"]
         constraints = [models.UniqueConstraint(fields=["user", "product"], name="unique_user_product_favorite")]
-        verbose_name = "Избранное"
-        verbose_name_plural = "Избранное"
+        verbose_name = "Favorite"
+        verbose_name_plural = "Favorites"
 
     def __str__(self):
         return f"{self.user} ♥ {self.product}"

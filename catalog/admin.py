@@ -17,12 +17,12 @@ class ProductVideoInline(admin.TabularInline):
     ordering = ("color", "sort_order")
 
 
-@admin.action(description="Одобрить объявления")
+@admin.action(description="Approve selected listings")
 def approve_products(modeladmin, request, queryset):
     queryset.update(moderation_status=Product.MODERATION_APPROVED, is_active=True)
 
 
-@admin.action(description="Отклонить объявления")
+@admin.action(description="Reject selected listings")
 def reject_products(modeladmin, request, queryset):
     queryset.update(moderation_status=Product.MODERATION_REJECTED, is_active=False)
 
@@ -38,11 +38,11 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductVideoInline]
     actions = [approve_products, reject_products]
     fieldsets = (
-        ("Основное", {"fields": ("owner", "source", "moderation_status", "moderation_note", "category", "slug", "brand", "product_type", "is_rentable", "is_purchasable", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
+        ("Main", {"fields": ("owner", "source", "moderation_status", "moderation_note", "category", "slug", "brand", "product_type", "is_rentable", "is_purchasable", "sizes", "colors", "cover_image", "is_featured", "is_active")}),
         ("AZ", {"fields": ("name_az", "description_az", "material_az", "composition_az", "extra_details_az", "length_az", "care_az", "additional_note_az")}),
         ("RU", {"fields": ("name_ru", "description_ru", "material_ru", "composition_ru", "extra_details_ru", "length_ru", "care_ru", "additional_note_ru")}),
         ("EN", {"fields": ("name_en", "description_en", "material_en", "composition_en", "extra_details_en", "length_en", "care_en", "additional_note_en")}),
-        ("Цены", {"fields": ("rental_price", "sale_price", "custom_price", "min_rental_days"), "description": "Для аренды rental_price — цена за один календарный день."}),
+        ("Pricing", {"fields": ("rental_price", "sale_price", "custom_price", "min_rental_days"), "description": "For rentals, rental price is the price per calendar day."}),
     )
 
 
@@ -75,12 +75,12 @@ class ProductVideoAdmin(admin.ModelAdmin):
     list_select_related = ("product", "color")
 
 
-@admin.action(description="Подтвердить выбранные бронирования")
+@admin.action(description="Confirm selected reservations")
 def confirm_reservations(modeladmin, request, queryset):
     queryset.update(status=Reservation.CONFIRMED)
 
 
-@admin.action(description="Отменить выбранные бронирования")
+@admin.action(description="Cancel selected reservations")
 def cancel_reservations(modeladmin, request, queryset):
     queryset.update(status=Reservation.CANCELLED)
 
@@ -100,7 +100,7 @@ class ReservationAdmin(admin.ModelAdmin):
             obj.calculate_pricing()
         super().save_model(request, obj, form, change)
 
-    @admin.display(description="Код брони")
+    @admin.display(description="Booking code")
     def short_code_admin(self, obj):
         return obj.short_code
 
@@ -114,10 +114,10 @@ class ContactMessageAdmin(admin.ModelAdmin):
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
-        ("Бренд", {"fields": ("brand_name",)}),
-        ("Контакты", {"fields": ("contact_email", "contact_phone", "location_az", "location_ru", "location_en")}),
+        ("Brand", {"fields": ("brand_name",)}),
+        ("Contacts", {"fields": ("contact_email", "contact_phone", "location_az", "location_ru", "location_en")}),
         ("WhatsApp", {"fields": ("whatsapp_phone", "whatsapp_label_az", "whatsapp_label_ru", "whatsapp_label_en", "whatsapp_message_az", "whatsapp_message_ru", "whatsapp_message_en")}),
-        ("Социальные сети", {"fields": ("instagram_url", "facebook_url", "tiktok_url", "youtube_url", "pinterest_url")}),
+        ("Social links", {"fields": ("instagram_url", "facebook_url", "tiktok_url", "youtube_url", "pinterest_url")}),
     )
 
     def has_add_permission(self, request):

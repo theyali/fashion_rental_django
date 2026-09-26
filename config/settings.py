@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
-    "catalog",
+    "catalog.apps.CatalogConfig",
 ]
 
 MIDDLEWARE = [
@@ -101,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "az"
+LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Baku"
 USE_I18N = True
 USE_TZ = True
