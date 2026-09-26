@@ -16,3 +16,4 @@ COPY . .
 
 # Run through sh so bind-mounted entrypoint.sh does not need the executable bit.
 ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
+ 
