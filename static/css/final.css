@@ -170,7 +170,7 @@ body.search-open{overflow:hidden}
 }
 
 @media (max-width:390px){
-  .site-header .brand span{display:none}.filter-panel{grid-template-columns:1fr}.filter-actions{grid-column:auto}.product-card h3{font-size:10px}.product-card__price{font-size:9px}
+  .filter-panel{grid-template-columns:1fr}.filter-actions{grid-column:auto}.product-card h3{font-size:10px}.product-card__price{font-size:9px}
 }
 
 @media (hover:none){
@@ -179,4 +179,96 @@ body.search-open{overflow:hidden}
 
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+@media (max-width:700px){
+  .product-detail{
+    display:grid;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:28px;
+    max-width:100%;
+    overflow:hidden;
+  }
+
+  .product-detail>*,
+  .product-viewer-wrap,
+  .product-info,
+  .product-title-row,
+  .product-title-row h1,
+  .product-media-details,
+  .product-specs,
+  .product-spec-row,
+  .booking-block{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .product-viewer{
+    width:100%;
+    max-width:100vw;
+    border-left:0;
+    border-right:0;
+  }
+
+  .media-mode-switch{
+    left:auto;
+    width:calc(100% - 36px);
+    margin-left:18px;
+    margin-right:18px;
+  }
+
+  .product-title-row{
+    align-items:flex-start;
+    gap:14px;
+  }
+
+  .product-info h1{
+    font-size:clamp(38px,13vw,54px);
+    line-height:.96;
+    letter-spacing:0;
+    overflow-wrap:anywhere;
+  }
+
+  .favorite-toggle--detail{
+    flex:0 0 46px;
+    width:46px;
+    height:46px;
+    margin-top:2px;
+  }
+
+  .price-big{
+    font-size:clamp(28px,10vw,40px);
+    line-height:1;
+    padding:22px 0;
+  }
+
+  .product-price-stack{
+    gap:12px;
+  }
+
+  .swatches{
+    flex-wrap:wrap;
+    gap:12px;
+  }
+
+  .swatch{
+    width:34px;
+    height:34px;
+    flex:0 0 34px;
+  }
+
+  .product-spec-row{
+    grid-template-columns:1fr;
+    gap:7px;
+    padding:14px 0;
+  }
+
+  .product-spec-row span{
+    letter-spacing:.13em;
+  }
+
+  .product-spec-row strong{
+    font-size:13px;
+    overflow-wrap:anywhere;
+  }
 }
